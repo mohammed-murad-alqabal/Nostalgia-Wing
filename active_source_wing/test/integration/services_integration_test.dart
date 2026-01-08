@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/native.dart';
 import 'package:wing_of_nostalgia/core/data/app_database.dart';
 import 'package:wing_of_nostalgia/core/services/db_service.dart';
@@ -8,6 +9,9 @@ import 'package:drift/drift.dart' as drift;
 
 /// Integration tests for service interactions.
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
+
   late DBService dbService;
   late AuthService authService;
   late AppDatabase db;

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/native.dart';
 import 'package:wing_of_nostalgia/core/data/app_database.dart';
 import 'package:wing_of_nostalgia/core/services/db_service.dart';
@@ -10,6 +11,8 @@ void main() {
   late AppDatabase db;
 
   setUp(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
     // Setup in-memory drift database for testing
     db = AppDatabase.forTesting(NativeDatabase.memory());
 
