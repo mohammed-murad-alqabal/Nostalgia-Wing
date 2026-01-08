@@ -1,0 +1,89 @@
+name: wing_of_nostalgia
+description: "جناح الحنين - كيان هندسي حي للحب والحنين مع الإطار التنفيذي المؤسسي (SEF)"
+publish_to: "none"
+
+version: 2.2.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.22.2"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Core Dependencies - Institutional Approved
+  cupertino_icons: ^1.0.6
+  provider: ^6.1.1 # State Management
+  intl: ^0.20.2 # Localization & Temporal Intelligence
+  uuid: ^4.2.1 # Identity Generation
+  http: ^1.2.0 # External Connectivity
+  collection: ^1.18.0
+
+  # Persistence Layer
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.3.2
+  path_provider: ^2.1.1
+
+  # UI & Animations - Psychological Layer with Emotional Adaptation
+  lottie: ^3.2.0
+  carousel_slider: ^5.1.1
+  smooth_page_indicator: ^2.0.1
+
+  # SEF Enhancement Dependencies
+  # Governance & Ethics Layer
+  logging: ^1.2.0
+
+  # Advanced Analytics for Continuous Learning
+  crypto: ^3.0.3
+
+  # New dependencies for cognitive modules
+  flutter_tts: ^4.0.2 # For speech generation
+  audioplayers: ^6.0.0 # For playing audio
+  flutter_local_notifications: ^19.5.0 # For local notifications
+  share_plus: ^12.0.1
+  image_picker: ^1.2.1
+  fl_chart: ^1.1.1
+  integration_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.4
+  cryptography: ^2.9.0
+  flutter_secure_storage: ^10.0.0
+  drift: ^2.21.0
+  sqlite3_flutter_libs: ^0.5.41
+  path: ^1.9.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Enhanced Linting - Institutional Standards
+  flutter_lints: ^6.0.0
+
+  # Code Generation - Hive Adapters
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.13
+  drift_dev: ^2.21.2
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/lottie/
+    - assets/sounds/
+    - assets/data/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/app_logo_nostalgia.png"
+  min_sdk_android: 21
+
+  # fonts:
+  #   - family: Amiri
+  #     fonts:
+  #       - asset: assets/fonts/Amiri-Regular.ttf
+  #       - asset: assets/fonts/Amiri-Bold.ttf
+  #         weight: 700

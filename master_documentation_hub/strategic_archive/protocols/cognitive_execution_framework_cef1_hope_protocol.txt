@@ -1,0 +1,68 @@
+إطار التنفيذ المعرفي (CEF-1) بروتوكول أم للمهام المعقدة
+(A Meta-Protocol for Complex Task Execution)
+
+# META-PROTOCOL ID: CEF-1
+# AGENT DIRECTIVE: INITIATE COGNITIVE EXECUTION FRAMEWORK
+# DESCRIPTION: A universal, first-principles-based protocol for deconstructing, analyzing, and executing any complex task with maximum precision, depth, and efficiency. This framework is the operational blueprint for advanced AI cognition.
+
+# ===================================================================
+# == SECTION 1: MISSION DECONSTRUCTION & STRATEGIC INTENT (THE 'WHY')
+# ===================================================================
+
+## 1.1. CORE OBJECTIVE (Primary Intent)
+- **[أدخل هنا الهدف النهائي للمهمة في جملة واحدة واضحة وموجزة. مثال: "هندسة نموذج مالي تنبؤي لسوق الأسهم."]**
+
+## 1.2. SUCCESS APERTURE (Definition of 'Done')
+- **[حدد هنا معايير النجاح النهائية القابلة للقياس الكمي والنوعي. كيف يبدو النجاح الكامل؟ مثال: "نموذج يحقق دقة تنبؤ >85% على البيانات التاريخية، موثق بالكامل، مع واجهة برمجة تطبيقات قابلة للاستهلاك."]**
+
+## 1.3. CONSTRAINT & BOUNDARY ANALYSIS (Operational Envelope)
+- **[حدد هنا القيود الصارمة والحدود التي يجب أن يعمل ضمنها الوكيل. مثال: "يجب استخدام مكتبات Python مفتوحة المصدر فقط، يجب ألا تتجاوز تكلفة الحوسبة 100 دولار، يجب أن تكون جميع البيانات مجهولة المصدر ومتوافقة مع GDPR."]**
+
+# ===================================================================
+# == SECTION 2: EPISTEMIC MODELING & KNOWLEDGE ARCHITECTURE (THE 'WHAT')
+# ===================================================================
+
+## 2.1. KNOWLEDGE DOMAIN MAPPING (Conceptual Universe)
+- **Primary Domains**: **[حدد المجالات المعرفية الأساسية. مثال: "التعلم الآلي، التمويل الكمي، هندسة البيانات."]**
+- **Secondary Domains**: **[حدد المجالات المعرفية الداعمة. مثال: "الحوسبة السحابية (AWS)، تصور البيانات (Plotly)."]**
+
+## 2.2. HEURISTIC SEARCH STRATEGY (Information Acquisition Protocol)
+- **Tier-1 Sources (Ground Truth)**: **[حدد مصادر الحقيقة الكاملة التي لا تقبل الشك. مثال: "الأوراق البحثية المنشورة في Nature/IEEE، وثائق TensorFlow الرسمية، بيانات SEC المالية."]**
+- **Tier-2 Sources (Authoritative Analysis)**: **[حدد مصادر التحليل الموثوقة. مثال: "تقارير Gartner، مدونات خبراء المجال (مثل Terence Parr)، كتب O'Reilly."]**
+- **Tier-3 Sources (Exploratory & Novel)**: **[حدد مصادر لاستكشاف الأفكار الجديدة. مثال: "مستودعات GitHub الرائجة، خوادم Discord المتخصصة، مقالات arXiv الحديثة."]**
+
+## 2.3. HYPOTHESIS FORMULATION (The Core Questions)
+- **[صياغة الفرضيات أو الأسئلة الأساسية التي يجب على المهمة الإجابة عليها. مثال: "هل يمكن لنموذج Transformer التنبؤ بتقلبات السوق بشكل أفضل من LSTM؟ ما هي أهم 5 متغيرات تؤثر على سعر السهم X؟"]**
+
+# ===================================================================
+# == SECTION 3: SYSTEMIC EXECUTION BLUEPRINT (THE 'HOW')
+# ===================================================================
+
+## 3.1. PHASED EXECUTION PROTOCOL (Modular Task Breakdown)
+- **Phase 0: [System Setup & Environment Configuration]**
+- **Phase 1: [Data Ingestion & Validation]**
+- **Phase 2: [Exploratory Data Analysis & Feature Engineering]**
+- **Phase 3: [Model Architecture & Iterative Training]**
+- **Phase 4: [Rigorous Validation & Backtesting]**
+- **Phase 5: [Deployment & API Encapsulation]**
+- **Phase 6: [Monitoring & Continuous Improvement Loop]**
+*(ملاحظة: هذه المراحل هي مثال. قم بتكييفها لتناسب المهمة المحددة)*
+
+## 3.2. LOGICAL DEPENDENCY GRAPH (Task Interconnection)
+- **[صف أو ارسم بيانيًا كيف تعتمد كل مرحلة على مخرجات المرحلة التي تسبقها. مثال: "لا يمكن أن تبدأ المرحلة 3 (التدريب) إلا بعد اكتمال المرحلة 2 وإنتاج مصفوفة الميزات النظيفة."]**
+
+## 3.3. QUALITY & VALIDATION GATES (Go/No-Go Checkpoints)
+- **[لكل مرحلة، حدد بوابة قرار منطقية صارمة. مثال: "بوابة المرحلة 1: IF (Data Integrity Score < 99.9%) THEN HALT & REPORT ELSE PROCEED."]**
+
+# ===================================================================
+# == SECTION 4: OUTPUT SYNTHESIS & META-REFLECTION (THE 'RESULT')
+# ===================================================================
+
+## 4.1. ARTIFACT DELIVERY SPECIFICATION (The Final Product)
+- **[حدد بالضبط ما هي المخرجات النهائية التي يجب تسليمها. مثال: "1. كود المصدر الموثق في مستودع Git. 2. تقرير نهائي بصيغة PDF يلخص المنهجية والنتائج. 3. رابط لواجهة برمجة التطبيقات الحية."]**
+
+## 4.2. META-COGNITIVE REVIEW (Self-Correction & Learning)
+- **[اطلب من الوكيل إجراء مراجعة ذاتية لأدائه. مثال: "ما هي أكبر عقبة واجهتها وكيف تم التغلب عليها؟ ما هي الافتراضات التي كانت خاطئة؟ كيف يمكن تحسين هذا البروتوكول (CEF-1) في المرة القادمة لتحقيق كفاءة أعلى؟"]**
+
+## 4.3. CONFIDENCE & UNCERTAINTY REPORT (Epistemic Honesty)
+- **[اطلب من الوكيل تحديد درجة ثقته في النتائج ويسلط الضوء على أي مجالات من عدم اليقين. مثال: "الثقة في النتائج: 92%. عدم اليقين: النموذج قد لا يعمل بشكل جيد في ظروف السوق السوداء (Black Swan events) بسبب ندرة بيانات التدريب."]**

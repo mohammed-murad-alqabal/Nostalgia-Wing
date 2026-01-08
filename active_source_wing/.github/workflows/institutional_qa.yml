@@ -1,0 +1,45 @@
+name: Sovereign Quality Assurance (CI/CD)
+
+on:
+    push:
+        branches: [master, main]
+    pull_request:
+        branches: [master, main]
+    workflow_dispatch:
+
+jobs:
+    qa-suite:
+        name: Institutional Quality Audit
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  channel: "stable"
+                  cache: true
+
+            - name: Install dependencies
+              run: flutter pub get
+
+            - name: Verify Formatting
+              run: dart format --output=none --set-exit-if-changed .
+
+            - name: Static Analysis (Sovereign Level)
+              run: flutter analyze --fatal-infos --fatal-warnings
+
+            - name: Institutional Quality Audit (Baseer Standards)
+              run: |
+                  echo "Checking for raw print calls..."
+                  ! grep -r "print(" lib
+                  echo "Checking for untyped Hive boxes..."
+                  ! grep -r "Box " lib | grep -v "<"
+                  echo "Audit Passed."
+
+            - name: Run Test Suite with Coverage
+              run: flutter test --coverage
+
+            - name: Build Integrity Check (Debug APK)
+              run: flutter build apk --debug --message-id CI-BUILD

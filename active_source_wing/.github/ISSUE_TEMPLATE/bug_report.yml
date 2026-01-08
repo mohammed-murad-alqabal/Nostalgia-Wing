@@ -1,0 +1,49 @@
+name: 🐞 Bug Report (Sovereign Engineering)
+description: Report a bug to help improve the system's integrity.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        شكراً لمساهمتك في تحسين "جناح الحنين". يرجى ملء التفاصيل أدناه بدقة.
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+  - type: textarea
+    id: logs
+    attributes:
+      label: System Logs (WingLogger)
+      description: Paste relevant logs from the terminal or WingLogger output.
+      render: shell
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical (System Crash / Data Loss)
+        - High (Core Feature Broken)
+        - Medium (UI/UX Inconsistency)
+        - Low (Minor Tweak)
+    validations:
+      required: true

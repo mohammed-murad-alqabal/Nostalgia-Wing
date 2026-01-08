@@ -1,0 +1,43 @@
+name: Sovereign Auto-Repair
+
+on:
+    pull_request:
+        types: [opened, synchronize]
+    # manual trigger for main branch cleanup
+    workflow_dispatch:
+
+jobs:
+    auto-fix:
+        name: Institutional Auto-Correction
+        runs-on: ubuntu-latest
+        if: github.event.pull_request.head.repo.full_name == github.repository # Only run on internal PRs for security
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.head_ref }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  channel: "stable"
+
+            - name: Install dependencies
+              run: flutter pub get
+
+            - name: Run Dart Fix
+              run: dart fix --apply
+
+            - name: Run Dart Format
+              run: dart format .
+
+            - name: Apply Fixes
+              run: |
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "Sovereign Auto-Repair Bot"
+                  git add .
+                  git diff-index --quiet HEAD || git commit -m "style: automated institutional code repair [skip ci]"
+                  git push
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

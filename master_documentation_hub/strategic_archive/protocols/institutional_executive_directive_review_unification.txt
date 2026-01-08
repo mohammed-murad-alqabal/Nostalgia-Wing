@@ -1,0 +1,124 @@
+التوجيه المؤسسي التنفيذي — أمر مراجعة وتوحيد نسخ المشروع
+
+المسمّى Authority Merge Directive
+الجهة المنفذة المراجع المعرفي  الوكيل الذكي المفوض (Cognitive Reviewer  Authorized Agent)
+الغاية إنتاج نسخة واحدة نهائية تفوق جميع النسخ السابقة من حيث الاحترافية، الدقّة، العمق، الشمولية، التكامل، الكفاءة، والاكتمال.
+الالتزام يُنفّذ وفق مبادئ المؤسسة التقنية، المعايير الدولية (ISO, IEEE, OWASP, PMBOKTOGAF عند الاقتضاء)، ومبادئ الأمان (Zero-Trust).
+
+المهمة (Mandate — موجز تنفيذي)
+
+أنت المرجع المعرفي والخبير التقني والهندسي المعتمد. قم بمراجعة وتحليلٍ دقيقٍ وشامل لكل النسخ والملفات المرفقة المتاحة. ثم ابتكر وصدر نسخة موحَّدة نهائية تكون
+
+أعلى جودة من كل نسخة سابقة؛
+
+متكاملة عبر الأبعاد فلسفية، معرفية، استراتيجية، هندسية، تقنية، تشغيلية وأمنية؛
+
+قابلة للتنفيذ الآلي من قِبل وكلاء ذكيين (Manus AI-H أو ما يعادله)؛
+
+معيارية وقابلة للتدقيق (audit-ready، machine-readable artifacts).
+
+متطلبات الأداء والمخرجات (Deliverables & Requirements)
+
+النسخة النهائية الموحدة — ملف واحد بصيغة Markdown
+
+اسم الملف SGF_SBT_Final_vX.md
+
+يتضمّن Executive Summary, Axioms, Core Architecture (layers), Core Capabilities, Operational Execution Model, Decision Gates, KPI Matrix, Acceptance Criteria, Governance & Audit.
+
+طولها مكثفة لكن شاملة — لا تتجاوز 30 صفحة عند الطباعة إلا إذا كانت الحاجة التقنية تقتضي أكثر.
+
+مخرجات آلية قابلة للتحميل
+
+Decision_Gates.yaml — كل بوابة قرار بصيغة IF-THEN قابلة للقراءة الآلية.
+
+KPIs.json — شجرة مؤشرات الأداء (North-Star + Quality + Delivery + Ops).
+
+Prompts_Library.jsonl — مكتبة Prompts هيكلية للـ LLMs (design, codegen, test, audit).
+
+SBT_manifest.json — خريطة أثرية (traceability map) تربط عناصر النسخة النهائية بالمصادر الأصلية (من أي نسخةملف استُخدمت الفكرة).
+
+CI_CD_Templates — عينات جاهزة (GitHub Actions  GitLab  Jenkins) وملف IaC أساسي (TerraformCloudFormation skeleton).
+
+تقرير مراجعة (Review Report)
+
+موجز عن كيفية الجمع والاختيارات قرارات حذفتحسينإضافة ولماذا.
+
+جدول مقارنة يوضح أي عناصر انتُقِلت أو طوّرت من أي نسخة سابقة.
+
+معايير القبول (Acceptance Criteria — Quantified)
+
+Functional Tests pass rate ≥ 99.0% (configurable).
+
+Security Scan PassRate ≥ 99.5% (OWASP critical = 0).
+
+Decision Gates deterministic (no ambiguous conditions).
+
+Artifact completeness = 100% (Markdown, YAML, JSON, Pipelines).
+
+Traceability coverage ≥ 95% (source → rationale mapping).
+
+منهجية العمل (Execution Steps — For Agent)
+
+Ingest
+
+استورد كل الملفاتنسخمرفقات المتاحة إلى بيئة العمل. نفّذ Normalization (unify encodings, remove duplicates).
+
+Catalog & Classify
+
+أنشئ فهرسًا لكل مصدر اسم الملف، تاريخ الإنشاء، مستوى الثقة، نوع المحتوى (استراتيجيتقنيبروتوكولينموذجي).
+
+Extract & Distill
+
+استخرج العناصر الجوهرية مبادئ، بنى معمارية، Decision Gates، KPIs، قوالب، Prompts، أمثلة تنفيذية.
+
+صنّفها إلى Reuse (اعتماد كما هي)، Adapt (تعديلتكييف)، Replace (استبدال بأفضل صياغة).
+
+Synthesize (From First Principles)
+
+منطلقًا من المبادئ الأولى، اعد هندسة الهيكل العام بحيث يحقق الاتساق البيني ويغلق التكرار والفجوات.
+
+طبّق مصطلحات إطارية معيارية (Modular, API-First, Multi-Layered, AI-Augmented, Zero-Trust, CICD, IaC, Observability, Self-Healing).
+
+Codify
+
+أنشئ المسودة النهائية في Markdown مع مقاطع قابلة للاستخلاص الآلي (front-matter metadata).
+
+ولد Decision_Gates.yaml وKPIs.json وPrompts_Library.jsonl.
+
+Verify (Automated Sanity Checks)
+
+تحقق آليًا من تكامل الروابط، صلاحية JSONYAML، توافر الحقول الأساسية، عدم وجود شروط قرار متعارضة.
+
+شغل مختبر اختبار سطحي تلقائي (smoke tests) على قوالب الـ CI لتأكيد القابلية الأساسية.
+
+Document Rationale & Traceability
+
+أنشئ SBT_manifest.json يربط أي فقرةقرار بمصدرها (أي ملفنسخة سابقة) وسبب الاختيار.
+
+Deliver
+
+سلّم الحزمة النهائية Markdown + YAML + JSON + CI templates + Review Report.
+
+احسب checksum لكل ملف وضمّنه في report للتدقيق.
+
+قواعد إلزامية (Non-Negotiables)
+
+الالتزام بالمعايير كل عنصر تقني يجب أن يذكر معيار الامتثال (مثلاً OWASP for webmobile, ISO27001 for info-security, IEEEISO for quality).
+
+القرارات المبرّرة لا تُتّخذ إزالة أو استبدال دون توثيق السبب العلميالتقني.
+
+Machine-Readable First كل بوابة قرار، KPI، وPrompt يجب أن تكون قابلة للآلة (JSONYAMLJSONL).
+
+Human-In-Loop عند أي بوابة ذات أثر تنظيمي أو قانوني، ضع خطوة موافقة بشرية صريحة في الـ workflow.
+
+معايير الجودة النهائية (Quality Assurance)
+
+اجعل الوثيقة النهائية قابلة للطباعة وقابلة للتحميل.
+
+ضمّن مثالًا لكل Decision Gate وKPI مع سيناريو اختبار واحد لكلٍ منهما.
+
+سلّم مثالًا لعملية Bootstrap تشغيلية نفّذت فعلاً (log مصغر يوضح خطوات التحويل من ingest → synthesize → deliver).
+
+توقيع الأمر (Directive Sign-Off)
+
+أنت المرجع المفوّض — ابدأ التنفيذ فورًا. بعد التسليم، واصل تسجيل مراجعات تحسينية على هيئة ADRs (Architectural Decision Records) داخل المستودع.

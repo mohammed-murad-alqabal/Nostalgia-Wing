@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-01",
+  "description": "ملف الضوابط الشرعية لضمان نقاء المحتوى الديني",
+  
+  "approved_sources": [
+    "القرآن الكريم",
+    "صحيح البخاري",
+    "صحيح مسلم",
+    "سنن أبي داود",
+    "سنن الترمذي",
+    "سنن النسائي",
+    "سنن ابن ماجه",
+    "موطأ مالك",
+    "مسند أحمد",
+    "رياض الصالحين",
+    "الأذكار للنووي",
+    "حصن المسلم",
+    "أدعية مأثورة",
+    "الكلم الطيب"
+  ],
+  
+  "forbidden_terms": [
+    "بدعة",
+    "شرك",
+    "كفر",
+    "ضلال",
+    "منكر",
+    "حرام كامل",
+    "تحريف",
+    "انحراف"
+  ],
+  
+  "content_guidelines": {
+    "max_text_length": 500,
+    "require_source_verification": true,
+    "allow_personal_duas": true,
+    "require_arabic_text": false,
+    "allow_translations": true
+  },
+  
+  "quality_standards": {
+    "require_diacritics": false,
+    "verify_hadith_authenticity": true,
+    "check_quranic_accuracy": true,
+    "validate_reference_format": true
+  },
+  
+  "approved_categories": [
+    "quran",
+    "hadith",
+    "dua",
+    "dhikr",
+    "family_prayers",
+    "morning_evening_adhkar",
+    "travel_prayers",
+    "gratitude_prayers"
+  ]
+}
+

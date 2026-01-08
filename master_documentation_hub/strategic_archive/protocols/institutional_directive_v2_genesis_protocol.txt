@@ -1,0 +1,51 @@
+لتوجيه المؤسسي 2.0 بروتوكول التكوين المتقدم (Genesis Protocol)
+Directive-ID GDP-2.0
+Classification Institutional Executive Order
+Issued-To Manus Generative Agent (or equivalent Cognitive-OS)
+Subject Mandate for the Engineering of the Advanced Institutional Blank Template (SBT 5.0)
+Status ACTIVE & BINDING
+1.0 السياق المرجعي والمعرفي (Cognitive & Referential Context)
+1.1 المرجعية التأسيسية هذا التكليف هو امتداد وتطور للبنية المعرفية التراكمية للمشروع، ويستند إلى الأطر المؤسسية التالية كنقطة انطلاق دنيا (Baseline)
+إطار التنفيذ المعرفي (CEF-1)
+بروتوكول أوميغا (Ω)
+بروتوكول المؤسسة الهندسية الكاملة
+الإطار التنفيذي المؤسسي لمشروع جناح الحنين
+الكودكس المؤسسي الموحد (Institutional Unified Codex)
+بروتوكول المؤسسة الهندسية المتكاملة
+1.2 التوجيه الاستراتيجي أنت مكلف بتجاوز هذه الأطر، وليس مجرد تجميعها. الهدف هو تحقيق قفزة نوعية (Quantum Leap) في القدرة التنفيذية من خلال هندسة قالب يتسم بالإتقان التام.
+2.0 المهمة التنفيذية هندسة القالب المؤسسي الفارغ المتقدم (SBT 5.0)
+2.1 الهدف الأساسي ابتكار وهندسة قالب مؤسسي فارغ متقدم (Institutional Blank Template - SBT) من الصفر. يجب أن يكون هذا القالب بمثابة نظام تشغيل معرفي (Cognitive Operating System) لتنفيذ المشاريع المعقدة، مصمماً للتشغيل المباشر بواسطة وكيل ذكي مستقل.
+2.2 المواصفات الهندسية والمعمارية الإلزامية (Mandatory Architectural & Engineering Specifications)
+يجب أن يتمتع القالب بالخصائص التالية المدمجة في تصميمه الأساسي (Engineered-by-Design)
+بنية متعددة الأبعاد والطبقات (Multi-Layered & Multi-Dimensional Architecture)
+الوصف تصميم يدمج بشكل متماسك الأبعاد الاستراتيجية، المعرفية، التشغيلية، والتقنية في إطار موحد.
+المصطلحات الحاكمة Holistic, Layered Framework, Decoupled, Cohesive.
+هيكل معياري وقابل للتوسعة (Modular & Scalable Framework)
+الوصف بنية مكوناتية (Componentized) تسمح بإعادة التشكيل الديناميكي (Dynamic Reconfiguration)، التوسع المرن (Elastic Scaling)، والتكامل السلس مع أي نظام أو إطار مستقبلي.
+المصطلحات الحاكمة Modular, Scalable, Extensible, Interoperable, API-First.
+ديناميكية تكيفية ومرونة فائقة (Adaptive Dynamics & High Resilience)
+الوصف قدرة ذاتية على التكيف (Self-Adaptive) مع المتغيرات السياقية، مع تصميم يضمن تحمل الأعطال (Fault-Tolerant) واستمرارية التشغيل تحت أقصى الضغوط.
+المصطلحات الحاكمة Adaptive, Resilient, High-Availability (HA), Future-Proof.
+تكامل معرفي وتحفيز توليدي (Cognitive Integration & Generative Readiness)
+الوصف تصميم مهيأ ومدعوم بالذكاء الاصطناعي (AI-Augmented) لاتخاذ قرارات قائمة على البيانات (Data-Driven)، وتمكين التحليلات التنبؤية، وتحفيز النماذج التوليدية في كل مراحل التنفيذ.
+المصطلحات الحاكمة AI-Augmented, Cognitive-Driven, Predictive Analytics-enabled, Generative-Ready.
+حوكمة متأصلة وأداء مُحسَّن (Embedded Governance & Performance Optimization)
+الوصف دمج آليات الحوكمة (Governance-Embedded) وبوابات القرار (Decision Gates) ضمن الهيكل، مع التركيز على التميز التشغيلي (Operational Excellence) والتحسين الذاتي المستمر للأداء.
+المصطلحات الحاكمة Governance-Driven, Performance-Optimized, Self-Optimizing, KPI-Oriented.
+التزام كامل بالمعايير والأمان (Uncompromising Standards & Security Compliance)
+الوصف تصميم متوافق بالكامل (Standards-Compliant) مع أفضل الممارسات والأطر العالمية (IEEE, ISO, PMBOK, TOGAF)، مع تطبيق نموذج أمان انعدام الثقة (Zero-Trust Security) كقاعدة أساسية.
+المصطلحات الحاكمة Standards-Compliant, Secure-by-Design, Audit-Ready.
+3.0 المخرجات المطلوبة (Required Deliverables)
+3.1 ملف القالب المؤسسي (SBT File)
+الصيغة Markdown (.md) أو ما يعادلها من صيغ قابلة للمعالجة الآلية.
+المحتوى يجب أن يمثل الهيكل الكامل للنظام المستهدف، مع تضمين كافة الأقسام والمحاور والعناصر التشغيلية.
+3.2 بنية هرمية واضحة (Clear Hierarchical Structure)
+التصميم بنية منطقية تتدفق من الأقسام الرئيسية (Meta-Sections) إلى المحاور الفرعية (Sub-Domains)، وصولاً إلى العناصر التشغيلية (Operational Items) والتعليمات الداخلية (Embedded Instructions).
+3.3 إرشادات مدمجة للوكيل الذكي (Embedded AI Agent Guidance)
+الوظيفة تزويد القالب بتلميحات وإرشادات تنفيذية صريحة ومحفزة (Actionable & Cognitive Prompts) لتوجيه أي نموذج توليدي أو وكيل ذكي عند استخدام القالب، مما يضمن التنفيذ الدقيق والمستقل.
+4.0 التكليف النهائي للنموذج التوليدي (Final Mandate for the Generative Model)
+ابدأ التنفيذ فوراً. انطلق من الصفر (From First Principles) لابتكار القالب المؤسسي الفارغ (SBT) وفقاً للمواصفات الإلزامية المذكورة أعلاه. استلهم من الأطر المرجعية، ولكن لا تتقيد بها. أدخل تحسينات جوهرية تجعل المنتج النهائي
+الأكثر عمقاً وقوة من خلال بنية متعددة الطبقات ومترابطة.
+الأكثر ديناميكية وذكاءً من خلال التكامل العميق للذكاء الاصطناعي والآليات التكيفية.
+جاهزاً للتشغيل المؤسسي بحيث يمكن لأي وكيل ذكي مستقل (مثل Manus AI-H) استخدامه مباشرة لتحقيق أداء استثنائي ومتوافق مع جميع أبعاد المشروع.
+الهدف النهائي إنتاج النسخة الأكثر تطوراً وقوة وعمقاً من القالب المؤسسي في تاريخ المشروع، ليكون بمثابة حجر الأساس للمرحلة القادمة من التطور الهندسي.

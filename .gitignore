@@ -1,0 +1,61 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Visual Studio Code related
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/App.framework/
+**/ios/Flutter/Flutter.framework/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Runner/Base.lproj/Main.storyboard
+**/ios/Runner/Base.lproj/LaunchScreen.storyboard
+**/ios/Runner/Assets.xcassets/AppIcon.appiconset/
+**/ios/Runner/Assets.xcassets/LaunchImage.imageset/
+**/ios/Runner/Assets.xcassets/LaunchBackground.imageset/
+**/ios/Runner/Assets.xcassets/logo.imageset/
+**/ios/Runner/Assets.xcassets/logo_dark.imageset/
+**/android/Gradlew
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/app/src/main/assets/flutter_assets/
+**/android/app/src/main/res/drawable/launch_background.xml
+**/android/app/src/main/res/drawable-v21/launch_background.xml
+**/android/app/src/main/res/mipmap-*/ic_launcher.png
+**/android/app/src/main/res/mipmap-*/ic_launcher_foreground.png
+**/android/app/src/main/res/mipmap-*/ic_launcher_background.png
+**/android/app/src/main/res/mipmap-*/ic_launcher_round.png
+
+# Build artifacts
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Local configuration
+config.json
+secrets.yaml

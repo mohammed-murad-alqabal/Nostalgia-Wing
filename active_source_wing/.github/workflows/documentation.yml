@@ -1,0 +1,40 @@
+name: Sovereign Documentation Sync
+
+on:
+    workflow_run:
+        workflows: ["Sovereign Quality Assurance (CI/CD)"]
+        types: [completed]
+        branches: [main, master]
+
+jobs:
+    sync-docs:
+        name: Synchronize Living Documentation
+        runs-on: ubuntu-latest
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  channel: "stable"
+
+            - name: Install dependencies
+              run: flutter pub get
+
+            - name: Refresh Living Documentation
+              run: |
+                  echo "Generating system state documentation..."
+                  # Triggers the generation of current state docs via test trigger
+                  flutter test test/core/infrastructure/living_documentation_test.dart
+
+            - name: Commit & Push Changes
+              run: |
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "Sovereign Documentation Bot"
+                  git add docs/
+                  git diff-index --quiet HEAD || git commit -m "docs: auto-sync living documentation [skip ci]"
+                  git push
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

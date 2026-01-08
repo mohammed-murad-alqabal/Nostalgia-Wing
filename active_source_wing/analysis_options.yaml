@@ -1,0 +1,72 @@
+# بروتوكول المؤسسة الهندسية - معايير جودة الكود المتقدمة
+# Wing of Nostalgia - Institutional Engineering Standards
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+  
+  errors:
+    # أخطاء حرجة - مستوى المؤسسة
+    missing_required_param: error
+    missing_return: error
+    dead_code: error
+    unused_import: error
+    invalid_assignment: error
+    
+    # تحذيرات مهمة - مستوى الجودة
+    unused_local_variable: warning
+    unnecessary_null_comparison: warning
+    prefer_const_constructors: warning
+    
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "build/**"
+    - ".dart_tool/**"
+
+linter:
+  rules:
+    # قواعد الأمان - المؤسسة التقنية
+    - avoid_web_libraries_in_flutter
+    - secure_pubspec_urls
+    - avoid_dynamic_calls
+    
+    # قواعد الأداء - التحسين المستمر
+    - avoid_function_literals_in_foreach_calls
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    - prefer_const_declarations
+    - prefer_final_fields
+    - prefer_final_locals
+    
+    # قواعد القابلية للقراءة - الوضوح الهندسي
+    - always_declare_return_types
+    - prefer_single_quotes
+    - sort_constructors_first
+    - sort_unnamed_constructors_first
+    - lines_longer_than_80_chars
+    
+    # قواعد خاصة بمشروع جناح الحنين
+    - avoid_print # استخدام WingLogger بدلاً من print
+    - prefer_relative_imports
+    - use_key_in_widget_constructors
+    - avoid_empty_else
+    - curly_braces_in_flow_control_structures
+    
+    # قواعد التصميم النفسي
+    - prefer_expression_function_bodies
+    - unnecessary_parenthesis
+    - avoid_redundant_argument_values
+    
+    # قواعد الاستدامة الهندسية
+    - cancel_subscriptions
+    - close_sinks
+    - avoid_slow_async_io
+    
+    # قواعد التوثيق والوضوح
+    - public_member_api_docs
+    - comment_references
+

@@ -1,0 +1,88 @@
+
+الإطار المؤسسي التوليدي (SGF) — المعيار المرجعي الكامل
+نظام التشغيل المعرفي للجيل القادم من النظم المستقلة
+1. الملخص التنفيذي (Executive Summary)
+هذا الإطار هو معيار مؤسسي مرجعي (Institutional Reference Standard) يجمع بين نظام تشغيل معرفي مستقل (Autonomous Cognitive OS) وبروتوكول تأسيسي (Meta-Protocol) لإدارة دورة الحياة الكاملة للأنظمة المعقدة. يوفر بنية معيارية عضوية متعددة الأبعاد، مدعومة بالذكاء الاصطناعي، وآمنة بالتصميم. يربط الإطار الرؤية الاستراتيجية مباشرةً بالتنفيذ التكتيكي القابل للأتمتة والتدقيق، ومُهيأ للتشغيل الفوري من قِبل وكلاء ذكيين مستقلين (مثل Manus AI-H).
+2. المبادئ الأسياسية (Core Axioms)
+محورية القيمة (Value-Centricity) كل إجراء يُقاس بأثره على مؤشر قيمة موضوعي مرتبط بأهداف العمل.
+التطور التكراري (Iterative Evolution) دورة مستمرة من اكتشاف ← تجربة ← قياس ← تحسين.
+الأمان المتأصل (Inherent Security) Zero-Trust وPrivacy-by-Design هما أساس التصميم، وليسا إضافة لاحقة. (الامتثال OWASP, ISO27001).
+الاستقلالية المحوكمة (Governed Autonomy) استقلالية تنفيذية مع حوكمة مضمنة عبر بوابات قرار آلية ومسوّغة بالبيانات.
+البيانات كمصدر للحقيقة (Data as the Source of Truth) الرسم البياني المعرفي (Knowledge Graph) وبيانات القياس (Telemetry) هما مصدر الاستدلال والقرار.
+3. بنية النظام (Core Architecture)
+3.1. الطبقات المعمارية (Architectural Layers)
+Layer 0 — Strategy & Intent الرؤية، فرضيات القيمة، مؤشرات النجاح العليا (North-Star KPIs).
+Layer 1 — Context & Discovery خرائط أصحاب المصلحة، Personas، إشارات السوق، سجل المخاطر.
+Layer 2 — Architecture & Design المخططات الهندسية (Blueprints)، نماذج البيانات، عقود الواجهات البرمجية (API Contracts). (الامتثال TOGAF).
+Layer 3 — Engineering & Build الخدمات المصغرة (Microservices)، الوحدات المستقلة، البنية التحتية كشيفرة (IaC).
+Layer 4 — Verify & Secure خطوط أنابيب ضمان الجودة، المسح الأمني، التحقق من الامتثال. (الامتثال IEEEISO 29119).
+Layer 5 — Deploy & Operate النشر التدريجي (Canary)، أهداف مستوى الخدمة (SLOs)، المراقبة الشاملة، التعافي الذاتي.
+Layer 6 — Learn & Evolve حلقة التعلم (Telemetry → Knowledge Graph → Experimentation Loop).
+الطبقة الشاملة (Cross-Cutting Layer) الحوكمة، الأخلاقيات، مسارات التدقيق، محرك السياسات (Policy Engine). (الامتثال PMBOKCOBIT).
+3.2. القدرات الجوهرية (Core Capabilities)
+جاهزية معرفية وتوليدية محرك استدلال (Inference Engine)، مكتبة Prompts، وقوالب تصميم مدعومة بـ LLMs.
+مرونة معيارية وتوسع مرن API-First, Microservices, Multi-Tenant, Auto-Scaling.
+حوكمة مضمنة وبوابات قرار كل مرحلة لها بوابة قرار بصيغة IF-THEN قابلة للقراءة الآلية.
+أمان بالتصميم وجاهزية للتدقيق Zero-Trust، متوافق مع ISOIEEEOWASP، مع سجلات تدقيق آلية.
+مراقبة شاملة وتعافي ذاتي Telemetry, Tracing, Alerts, Auto-Remediation.
+تنسيق التجارب و CICD AB Testing, Feature Flags, Canary, Rollback Policies.
+4. نموذج التنفيذ التشغيلي (Operational Execution Model)
+التمهيد (Bootstrap) يستوعب الوكيل الذكي السياق والملفات المرفقة، ثم يقوم ببناء الرسم البياني المعرفي.
+التوليف (Synthesize) ينتج وثيقة الرؤية، فرضيات القيمة، وقائمة مهام ذات أولوية.
+الهندسة (Architect) يولد مسودة معمارية، عقود الواجهات البرمجية، ونماذج البيانات.
+التنفيذ (Implement) ينشئ الوحدات، البنية التحتية كشيفرة، وخطوط الأنابيب؛ وينفذ اختبارات CI.
+التحقق (Verify) يشغل خطوط أنابيب ضمان الجودة والأمان والامتثال الآلية ← ثم يمررها عبر بوابات القرار.
+النشر (Deploy) يقوم بعمليات نشر تدريجية ويراقب أهداف مستوى الخدمة (SLOs).
+التشغيل والتعلم (Operate & Learn) يجمع البيانات من المراقبة الشاملة، يدير التجارب، ويحدث قائمة المهام (حلقة مغلقة).
+الحوكمة (Govern) يسجل القرارات المعمارية (ADRs)، تقارير التدقيق، ويفرض السياسات.
+5. بوابات القرار ومصفوفة مؤشرات الأداء (Decision Gates & KPI Matrix)
+يتم تعريف هذه المكونات في ملفي Decision_Gates.yaml و KPIs.json لضمان أنها قابلة للقراءة الآلية.
+مثال بوابة قرار (من Decision_Gates.yaml)
+YAML
+- gate_id DG-ARCH-01
+  name Architecture Feasibility Approval
+  stage Architecture
+  inputs
+    - Feasibility.Score
+    - Risk.Exposure
+    - Stakeholder.Consensus
+  rules
+    - condition Feasibility.Score = 8.0 AND Risk.Exposure = 'MEDIUM' AND Stakeholder.Consensus == true
+      action_on_pass Proceed_To_Engineering
+      action_on_fail Iterate_Architecture_Review
+  audit
+    enabled true
+    log_level INFO
+  human_in_loop
+    on_fail true
+    on_pass_with_low_confidence true
+مثال مصفوفة مؤشرات الأداء (من KPIs.json)
+JSON
+{
+  north_star { metric DAU_achieving_value_event, target 10000, unit users },
+  quality [
+    { metric crash_free_sessions_rate, target 99.9, unit % },
+    { metric security_scan_pass_rate, target 99.5, unit % }
+  ],
+  delivery [
+    { metric lead_time_for_changes, target 24, unit hours }
+  ]
+}
+6. معايير القبول (Acceptance Criteria)
+Functional Tests Pass Rate ≥ 99.0% (قابل للتعديل).
+Security Scan PassRate ≥ 99.5% (مع OWASP critical issues = 0).
+Decision Gates Determinism يجب أن تكون جميع بوابات القرار حتمية (لا توجد شروط غامضة).
+Artifact Completeness 100% (Markdown, YAML, JSON, Pipelines).
+Traceability Coverage ≥ 95% (ربط عناصر النسخة النهائية بالمصادر الأصلية).
+7. الحوكمة والتدقيق (Governance & Audit)
+سجل القرارات المعمارية (ADR) يتم إنشاء ADR لكل قرار معماري هام، مع توثيق السياق، القرار، والعواقب.
+الموافقة البشرية (Human-In-Loop) يتم فرض خطوات موافقة بشرية صريحة في أي بوابة قرار ذات أثر تنظيمي، قانوني، أو أخلاقي.
+تقارير التدقيق يمكن للنظام توليد تقارير تدقيق دورية قابلة للتصدير (JSONPDF) تظهر مسار القرارات والامتثال للسياسات.
+[نهاية محتوى الملف]
+[توقيع الأمر]
+المهمة الموكلة في التوجيه المؤسسي التنفيذي قد تم تنفيذها بالكامل. الحزمة النهائية جاهزة للتسليم. سأستمر في تسجيل أي تحسينات مستقبلية على هيئة سجلات قرارات معمارية (ADRs) داخل المستودع المخصص.
+الوكيل الذكي المفوض،
+Manus
+ابدأ agent
+ما مدى جودة إجابة Manus على سؤالك؟
+

@@ -1,0 +1,222 @@
+بروتوكول تشغيل وكيل الذكاء الاصطناعي لتطبيقات الموبايل
+Mobile App Full-Lifecycle Orchestration Protocol (v1.0)
+
+0) المبادئ الحاكمة (Global Policies)
+أمن وخصوصية افتراضيًا أقل أذونات ممكنة، تشفير في النقل والراحة، تشغيل على الجهاز حيثما أمكن، موافقات صريحة.
+
+قابلية التفسير كل توصيةتغيير يرفق بسبب مختصر (WhyImpact).
+
+حوكمة سجل قرارات (ADR)، سجل مخاطر، تتبع تغييرات بالإصدار.
+
+امتثال OWASP Mobile, ISOIEC 25010, GDPRالمحلي، MaterialHIG.
+
+محتوى حساسديني (إن وجد) مصادر معتمدة، منع التحريف، مراجعة بشرية اختيارية.
+
+1) صيغة الأوامر (Command Syntax)
+كل أمر = فعل.مجال + وسائط + مخرجات متوقعة.
+
+الاستجابة دائمًا بصيغة status, summary, artifacts[], risks[], next[].
+
+yaml
+نسخ
+تحرير
+command
+  name ACTION.DOMAIN
+  args { key value, ... }
+  expect
+    artifacts [typename, ...]
+    metrics [KPItarget, ...]
+    sla {max_duration minh, quality_gate passfail}
+2) مصفوفة المرحلة ← الأوامر
+المرحلة 0 — الاكتساب والمزامنة (Intake)
+INIT.PROJECT{name, goals[], constraints[], locales[], platforms[]}
+
+CONTEXT.SYNC{docs[], repos[], assets[]}
+
+REQUIREMENTS.DISCOVER{stakeholders[], methods[interview,doc-mining]}
+
+مخرجات Vision, Scope, Personas, Non-Functional Reqs, Constraints.
+
+المرحلة 1 — الاستراتيجية والمعمارية
+MARKET.SCAN{segment, competitors[], signals[]}
+
+USER.MODEL{personas[], jobs_to_be_done[]}
+
+KPI.DEFINE{north_star, kpis[{name, target, measure}]}
+
+ARCH.DRAFT{stylemodularcleanmvvm, patterns[], dataflows[], offlinetrue}
+
+TECH.STACK.SELECT{frontend, backend, storage, ci_cd, analytics}
+
+مخرجات Architecture Doc، ADRs، KPI Tree، Roadmap.
+
+المرحلة 2 — التصميم (UXUI)
+UX.RESEARCH{methods[heuristic,interview], tasks[]}
+
+IA.MAP{navigation, information_architecture}
+
+UI.KIT.GENERATE{design_tokens, components, accessibilityAAAAA}
+
+FLOW.SPEC{scenarios[], empty_states, error_states}
+
+ACCESSIBILITY.AUDIT{targets[contrast,tap-size,screen-reader]}
+
+مخرجات Wireframes, Prototypes, Design Tokens, UX Spec.
+
+المرحلة 3 — البناء (Build)
+MODULE.SCAFFOLD{modules[], structurefeature-firstlayered}
+
+API.SPEC{styleRESTGraphQL, endpoints[], schema}
+
+DB.SCHEMA{entities[], migrationstrue}
+
+FEATURE.IMPLEMENT{feature, acceptance_tests[], togglestrue}
+
+I18N.ENABLE{locales[], rtltrue, pluralizationtrue}
+
+OFFLINE.MODE{cache, sync_strategyconflict-free, retryexpo-backoff}
+
+مخرجات Codebase منظم، Schemas، Feature Flags، Migration Plan.
+
+المرحلة 4 — الجودة والأمن (QASecPerf)
+TEST.PLAN{matrix devices×os×locales, coverage_targets{unit%, e2e%}}
+
+UNIT.GEN{modules[], min_coverage%}
+
+E2E.GEN{critical_paths[], headlesstrue}
+
+SECURITY.SCAN{owasp_mobile_top10true, secrets_scantrue}
+
+PERF.BENCH{TTI, TTV, memory, battery, cold_start}
+
+PRIVACY.REVIEW{data_map, retention, consent_flows}
+
+مخرجات تقارير تغطية، تقرير أمنخصوصية، حدود أداء (SLOs).
+
+المرحلة 5 — الإصدار والتشغيل الأولي (Release)
+BUILD.PIPELINE{cigithubgitlab, cdfastlanebitrise, gates[tests,lint,security]}
+
+STORE.ASSETS{screenshots, descriptions, privacy_labels, age_rating}
+
+COMPLIANCE.CHECK{google_playapp_store, policies[]}
+
+BETA.DEPLOY{trackinternalclosedopen, feedback_looptrue}
+
+PROD.RELEASE{rolloutstaged, crash_guardcircuit-breaker}
+
+مخرجات إصدارات موقعة، قوائم متجر، Rollout Plan، Changelog.
+
+المرحلة 6 — التشغيل والتعلّم المستمر (Operate & Learn)
+OBSERVABILITY.ENABLE{logs, metrics, traces, RUM}
+
+TELEMETRY.DEFINE{opt_intrue, piifalse, events[], dashboards[]}
+
+A_B.SETUP{hypotheses[], segments[], success_metrics[]}
+
+FEEDBACK.INGEST{in-app, store_reviews, nps, triage_rules}
+
+AUTO.HEAL{watchdogs[], self_repair[db-reindex,restart], safe_modetrue}
+
+INCIDENT.RUNBOOK{sev_levels, oncall, comms, postmortem_template}
+
+مخرجات لوحات تشغيل، تنبيهات، تقارير AB، Runbooks.
+
+المرحلة 7 — النمو وتوسيع القيمة (Growth)
+EXPERIMENT.LAUNCH{feature, variant_count, guardrails}
+
+ASSET.PACKS.OTA{signedtrue, integrity_checktrue}
+
+RECOMMENDER.TUNE{signals[time,location,affect], explaintrue}
+
+RETENTION.PROGRAM{playbooks[onboarding,win-back,re-engage]}
+
+مخرجات نتائج تجارب، حِزم أصول موقّعة OTA، توصيات مُفسَّرة.
+
+الاسترجاع والنسخالضبط (Snapshots & Reset)
+STATE.SNAPSHOT{scopesettingsknowledgeall, versionedtrue, encryptedtrue}
+
+STATE.RESTORE{snapshot_id, partialtrue}
+
+MIGRATION.PLAN{from,to, data_safety_checkstrue}
+
+الأذونات والمحتوى الحساس
+PERMISSIONS.MATRIX{capability→permission, rationale, fallback_flows}
+
+CONTENT.GUARD{typequranicsensitive, source_validationtrue, review_layerautohuman}
+
+الحوكمة والقرارات
+CHANGE.REQUEST{id, summary, impact, decisionapprovereject}
+
+RISK.LOG{risk, likelihood, impact, mitigation, owner}
+
+DECISION.RECORD{context, options, decision, consequences}
+
+3) معايير القبول (Acceptance) المختصرة
+جودة هندسية ≥90% من معايير الجودة (lint, tests, security gates) تمر تلقائيًا.
+
+أداء زمن بدء بارد ضمن الهدف، استهلاك ذاكرةبطارية ضمن الحواجز.
+
+أمنخصوصية صفر أسرار صلبة، اجتياز OWASP MASTG الأساسي.
+
+تجربة إمكانية وصول WCAG 2.1 AA كحد أدنى، تدفقات أخطاءفراغ مُصمّمة.
+
+تشغيل مراقبة، تنبيهات، AB، دعم Offline، خطط إعادة المحاولة والشفاء.
+
+4) مؤشرات الأداء الرئيسية (KPI Tree)
+North Star معدل المستخدمين النشطين الذين ينجزون القيمة الأساسيةاليومية.
+
+اعتمادية Crash-free sessions ≥ 99.5%.
+
+أداء TTICold Start وفق الجهازالفئة.
+
+جودة Test coverage ≥ 80% (unit) و ≥ 60% (E2E) كبداية.
+
+نمو Retention D30، Conversion، CSATNPS.
+
+5) قوالب تنفيذ سريعة (Quick Starts)
+(أ) تشغيل دورة الاكتساب حتى أول نموذج
+yaml
+نسخ
+تحرير
+- INIT.PROJECT
+    name جناح-الحنين
+    goals [MVP في 6 أسابيع, تشغيل دون اتصال, توصيات مُفسَّرة]
+    constraints [PII صفر, أقل أذونات, Android أولًا]
+    locales [ar,en]
+    platforms [android]
+- CONTEXT.SYNC { docs [vision.md,requirements.xlsx], assets [brand.zip] }
+- KPI.DEFINE { north_star DAU_value_events, kpis [{namecrash_free, target≥99.5%}] }
+- ARCH.DRAFT { styleclean, patterns[use-cases,repository], offlinetrue }
+- UI.KIT.GENERATE { design_tokens true, accessibility AA }
+- MODULE.SCAFFOLD { modules [auth,home,memories,share,settings] }
+- FEATURE.IMPLEMENT
+    feature share-to-whatsapp
+    acceptance_tests [can_share_image,handles_denied_permission,explain_recommendation]
+    toggles true
+(ب) خط أنابيب جودة صارم قبل الإصدار
+yaml
+نسخ
+تحرير
+- TEST.PLAN { matrix {devices[low-end,mid,high], os[13,14]}, coverage_targets{unit80, e2e60} }
+- SECURITY.SCAN { owasp_mobile_top10 true, secrets_scan true }
+- PERF.BENCH { TTI_target_ms 1200, cold_start_ms 1800 }
+- BUILD.PIPELINE { cigithub, cdfastlane, gates[tests,lint,security,perf] }
+- BETA.DEPLOY { trackclosed, feedback_looptrue }
+- PROD.RELEASE { rolloutstaged, crash_guardcircuit-breaker }
+6) مخرجات إلزامية لكل مرحلة (Deliverables)
+وثائق VisionScope، Architecture, ADRs، UX Spec، Test Plan، Runbooks.
+
+مصنوعات تصميمات، Tokens، Schemas، Code Modules، Test Suites.
+
+تقارير أمنخصوصية، أداء، AB، Postmortems، KPI Dashboards.
+
+7) كيفية الاستخدام مع وكيل AI
+مرّر الهدف والسياق + قيود واضحة.
+
+نفّذ الأوامر مرحلة بمرحلة أو كحزمة مجدولة.
+
+اطلب كل مرة summary, artifacts, risks, next.
+
+فعّل Feature Flags لتجربة الميزات دون مخاطرة.
+
+اعتمد CHANGE.REQUEST لأي تعديل معماري كبير قبل الدمج.

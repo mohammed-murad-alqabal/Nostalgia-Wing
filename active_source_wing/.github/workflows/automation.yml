@@ -1,0 +1,32 @@
+name: Sovereign Automation & Cleanup
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+    issues:
+        types: [opened]
+
+jobs:
+    labeling:
+        name: Automatic Context Labeling
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/labeler@v5
+              with:
+                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
+                  configuration-path: .github/labeler.yml
+
+    auto-comment:
+        name: Sovereign Welcome
+        runs-on: ubuntu-latest
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        steps:
+            - uses: actions/github-script@v7
+              with:
+                  script: |
+                      github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: 'شكراً لمساهمتك! سيقوم فريق وكلاء "بصير" بمراجعة هذا الطلب قريباً لضمان توافقه مع معايير السيادة التقنية.'
+                      })

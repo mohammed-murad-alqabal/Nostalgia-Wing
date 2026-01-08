@@ -1,0 +1,13 @@
+# Labeler configuration
+cognitive:
+  - lib/core/cognitive/**/*
+psychology:
+  - lib/core/psychology/**/*
+ui-design:
+  - lib/features/**/*
+  - assets/**/*
+infrastructure:
+  - lib/core/infrastructure/**/*
+  - .github/**/*
+tests:
+  - test/**/*

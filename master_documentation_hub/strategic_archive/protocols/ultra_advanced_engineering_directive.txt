@@ -1,0 +1,35 @@
+الأمر الهندسي فائق التقدم (The Apex Command)
+[مهمة هندسة معرفية إعادة هيكلة وتوحيد مشروع 'جناح الحنين']
+الهدف الاستراتيجي (Strategic Objective) تنفيذ عملية إعادة تأسيس شاملة (Total Refactoring) لقاعدة المعرفة الرقمية للمشروع. الهدف هو تحويل الأصول المعرفية المتناثرة الحالية إلى نظام معرفي موحد، معياري، وقابل للتطوير (Unified, Modular, and Scalable Knowledge System).
+بروتوكول التنفيذ (Execution Protocol)
+المرحلة الأولى التحليل والتشخيص الطوبولوجي (Topological Analysis & Diagnostics)
+المدخلات كامل محتوى المشروع المضغوط، مع التركيز على ملفات md, txt, dart, yaml, و json.
+العمليات
+تحليل التبعيات (Dependency Analysis) تفكيك العلاقات بين الكود (.dart) والتوثيق (.md) لتحديد أي فجوات أو تناقضات.
+تشخيص التكرار الدلالي (Semantic Redundancy Diagnosis) تجاوز مقارنة الحجم والاسم، واستخدام فهم اللغة الطبيعية لتحديد الأفكار والمفاهيم المكررة عبر مستندات مختلفة حتى لو كانت مصاغة بشكل مختلف.
+تقييم فجوات المعرفة (Knowledge Gap Assessment) تحديد المفاهيم أو الميزات المذكورة في الكود ولكنها غير موثقة، والعكس صحيح.
+المرحلة الثانية التوليف وإعادة البناء المعياري (Synthesis & Modular Reconstruction)
+العمليات
+استخلاص وتجريد الكيانات (Entity Abstraction) تحديد الكيانات الأساسية للمشروع (مثل Prayer, Covenant, Memory, User) وتوحيد تعريفاتها من جميع المصادر.
+دمج المعرفة الموجه (Directed Knowledge Fusion) دمج جميع المعلومات المتعلقة بكل كيان أو مفهوم في مصدر حقيقة واحد (Single Source of Truth).
+إعادة الهيكلة المعيارية بناء المخرجات النهائية وفقاً للهيكل المحدد أدناه.
+المخرجات المطلوبة (Required Deliverables)
+إنتاج مستودع معرفة مركزي (Central Knowledge Repository - CKR)، منظم في هيكل معياري مترابط من ملفات Markdown
+00_Master_Index.md الصفحة الرئيسية للمستودع، تحتوي على وصف موجز لكل وحدة وفهرس هايبرلينك (Hyperlinked Index) لجميع الوحدات الأخرى.
+01_Strategic_Intent.md
+الرؤية والمبادئ يدمج product_vision, guiding_principles.
+الأهداف والمتطلبات يدمج product_requirements_document.
+02_System_Architecture.md
+المخطط الهيكلي العام يدمج meta_architectural_blueprint.
+تدفق البيانات والخدمات يشرح العلاقات بين الخدمات (Services) المختلفة.
+03_Core_Models_and_Entities.md
+ملف مخصص لكل كيان رئيسي (مثل Prayer.md, Covenant.md) يشرح نموذج البيانات (Data Model) والمنطق المرتبط به.
+04_Service_Layer_Documentation.md
+ملف مخصص لكل خدمة (AuthService.md, PrayerGuidanceService.md) يشرح وظائفها، مدخلاتها، ومخرجاتها بناءً على تحليل الكود.
+05_Compliance_and_Ethics.md
+يوحد islamic_content_review, compliance_manifest, critical_analysis_of_ethical_dilution.
+06_Developer_Onboarding.md
+يوحد developer_guide مع إرشادات الإعداد والتشغيل.
+07_Project_Roadmap_and_Tasks.md
+يدمج جميع ملفات todo.md وقوائم المهام في خارطة طريق موحدة، مرتبة حسب الأولوية المقترحة (مثلاً إصلاح الأخطاء، ثم الميزات الجديدة، ثم التحسينات).
+القيد النهائي (Final Constraint) يجب أن يكون الناتج النهائي خالياً من أي ضوضاء معرفية (Knowledge Noise)، وأن يمثل مصدر الحقيقة الوحيد والموثوق للمشروع للمضي قدماً.
