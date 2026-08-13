@@ -1,0 +1,7 @@
+# Sensitive repository paths require maintainer review when code-owner review is enabled.
+/.github/ @mohammed-murad-alqabal
+/scripts/ @mohammed-murad-alqabal
+/config/ @mohammed-murad-alqabal
+/.gitignore @mohammed-murad-alqabal
+/docs/current/ @mohammed-murad-alqabal
+/docs/proposed/ @mohammed-murad-alqabal

@@ -59,3 +59,6 @@ build/
 # Local configuration
 config.json
 secrets.yaml
+
+# Generated repository-health report (uploaded by CI; never committed)
+/reports/repository-health.md
