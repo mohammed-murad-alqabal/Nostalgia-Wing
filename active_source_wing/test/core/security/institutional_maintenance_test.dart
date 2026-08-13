@@ -53,48 +53,65 @@ void main() {
     pathProviderChannel.setMockMethodCallHandler(null);
   });
 
-  test('privacy maintenance clears every application-owned sensitive store',
-      () async {
-    final secureMediaDir = Directory('${tempDir.path}/secure_media');
-    await secureMediaDir.create();
-    await File('${secureMediaDir.path}/memory.enc').writeAsString('ciphertext');
+  test(
+    'privacy maintenance clears every application-owned sensitive store',
+    () async {
+      final secureMediaDir = Directory('${tempDir.path}/secure_media');
+      await secureMediaDir.create();
+      await File('${secureMediaDir.path}/memory.enc')
+          .writeAsString('ciphertext');
 
-    final memoryId = await database.into(database.memories).insert(
-          MemoriesCompanion.insert(
-            title: 'Encrypted title',
-            encryptedContent: 'Encrypted content',
-            createdAt: drift.Value(DateTime.now()),
-          ),
-        );
-    await database.into(database.reflections).insert(
-          ReflectionsCompanion.insert(memoryId: memoryId, aiInsight: 'Insight'),
-        );
-    await database.into(database.sentMessages).insert(
-          SentMessagesCompanion.insert(
-            encryptedContent: 'Encrypted message',
-            type: 'morning',
-          ),
-        );
-    await database.into(database.surprises).insert(
-          SurprisesCompanion.insert(
-            encryptedContent: 'Encrypted surprise',
-            type: 'growth',
-          ),
-        );
+      final memoryId = await database
+          .into(database.memories)
+          .insert(
+            MemoriesCompanion.insert(
+              title: 'Encrypted title',
+              encryptedContent: 'Encrypted content',
+              createdAt: drift.Value(DateTime.now()),
+            ),
+          );
+      await database
+          .into(database.reflections)
+          .insert(
+            ReflectionsCompanion.insert(
+              memoryId: memoryId,
+              aiInsight: 'Insight',
+            ),
+          );
+      await database
+          .into(database.sentMessages)
+          .insert(
+            SentMessagesCompanion.insert(
+              encryptedContent: 'Encrypted message',
+              type: 'morning',
+            ),
+          );
+      await database
+          .into(database.surprises)
+          .insert(
+            SurprisesCompanion.insert(
+              encryptedContent: 'Encrypted surprise',
+              type: 'growth',
+            ),
+          );
 
-    await PrivacyMaintenanceService.maintenanceReset();
+      await PrivacyMaintenanceService.maintenanceReset();
 
-    expect(await database.select(database.memories).get(), isEmpty);
-    expect(await database.select(database.reflections).get(), isEmpty);
-    expect(await database.select(database.sentMessages).get(), isEmpty);
-    expect(await database.select(database.surprises).get(), isEmpty);
-    expect(await secureMediaDir.exists(), isFalse);
-    expect((await SharedPreferences.getInstance()).getString('test_key'), isNull);
-    expect(AuthService.instance.isAuthenticated, isFalse);
-    expect(Hive.isBoxOpen(PsychologicalContextManager.boxName), isFalse);
-    expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
-    expect(keyManager.wasCleared, isTrue);
-  });
+      expect(await database.select(database.memories).get(), isEmpty);
+      expect(await database.select(database.reflections).get(), isEmpty);
+      expect(await database.select(database.sentMessages).get(), isEmpty);
+      expect(await database.select(database.surprises).get(), isEmpty);
+      expect(await secureMediaDir.exists(), isFalse);
+      expect(
+        (await SharedPreferences.getInstance()).getString('test_key'),
+        isNull,
+      );
+      expect(AuthService.instance.isAuthenticated, isFalse);
+      expect(Hive.isBoxOpen(PsychologicalContextManager.boxName), isFalse);
+      expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
+      expect(keyManager.wasCleared, isTrue);
+    },
+  );
 
   test('privacy maintenance propagates a key invalidation failure', () async {
     sl.keyManager = _FailingKeyManager();
@@ -105,7 +122,10 @@ void main() {
     );
 
     // يفشل المسار بصورة ظاهرة للمستدعي ولا يدّعي نجاح التصفير.
-    expect((await SharedPreferences.getInstance()).getString('test_key'), isNull);
+    expect(
+      (await SharedPreferences.getInstance()).getString('test_key'),
+      isNull,
+    );
     expect(AuthService.instance.isAuthenticated, isFalse);
   });
 }

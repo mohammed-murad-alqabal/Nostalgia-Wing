@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:cryptography/cryptography.dart';
 
 /// [SecurityService] handles encryption of sensitive marital data.
@@ -43,11 +44,7 @@ class SecurityService {
       combinedBytes.length - _macLength,
     );
 
-    final secretBox = SecretBox(
-      cipherText,
-      nonce: nonce,
-      mac: Mac(macBytes),
-    );
+    final secretBox = SecretBox(cipherText, nonce: nonce, mac: Mac(macBytes));
 
     final clearTextBytes = await algorithm.decrypt(
       secretBox,
@@ -59,10 +56,7 @@ class SecurityService {
 
   /// Encrypts raw [bytes] using the provided [secretKey].
   Future<Uint8List> encryptBytes(Uint8List bytes, SecretKey secretKey) async {
-    final secretBox = await algorithm.encrypt(
-      bytes,
-      secretKey: secretKey,
-    );
+    final secretBox = await algorithm.encrypt(bytes, secretKey: secretKey);
 
     final combined = BytesBuilder();
     combined.add(secretBox.nonce);
@@ -74,7 +68,9 @@ class SecurityService {
 
   /// Decrypts [encryptedBytes] using the provided [secretKey].
   Future<Uint8List> decryptBytes(
-      Uint8List encryptedBytes, SecretKey secretKey) async {
+    Uint8List encryptedBytes,
+    SecretKey secretKey,
+  ) async {
     _validateEncryptedPayload(encryptedBytes);
 
     final nonce = encryptedBytes.sublist(0, _nonceLength);
@@ -84,11 +80,7 @@ class SecurityService {
       encryptedBytes.length - _macLength,
     );
 
-    final secretBox = SecretBox(
-      cipherText,
-      nonce: nonce,
-      mac: Mac(macBytes),
-    );
+    final secretBox = SecretBox(cipherText, nonce: nonce, mac: Mac(macBytes));
 
     final clearTextBytes = await algorithm.decrypt(
       secretBox,
@@ -100,7 +92,9 @@ class SecurityService {
 
   void _validateEncryptedPayload(List<int> payload) {
     if (payload.length < _nonceLength + _macLength) {
-      throw const FormatException('Encrypted payload is too short for AES-GCM.');
+      throw const FormatException(
+        'Encrypted payload is too short for AES-GCM.',
+      );
     }
   }
 }
