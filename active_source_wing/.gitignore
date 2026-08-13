@@ -47,3 +47,4 @@ logs/
 coverage/
 *.hive
 *.lock
+!pubspec.lock

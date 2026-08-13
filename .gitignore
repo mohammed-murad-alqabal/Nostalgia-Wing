@@ -35,9 +35,6 @@
 **/ios/Runner/Assets.xcassets/LaunchBackground.imageset/
 **/ios/Runner/Assets.xcassets/logo.imageset/
 **/ios/Runner/Assets.xcassets/logo_dark.imageset/
-**/android/Gradlew
-**/android/gradlew
-**/android/gradlew.bat
 **/android/local.properties
 **/android/app/src/main/assets/flutter_assets/
 **/android/app/src/main/res/drawable/launch_background.xml
