@@ -14,9 +14,7 @@
     "**/.DS_Store",
     "**/*.log"
   ],
-  "known_tracked_violations": [
-    "active_source_wing/coverage/lcov.info"
-  ],
+  "known_tracked_violations": [],
   "allowed_zero_byte_paths": [
     "**/.gitkeep",
     "**/placeholder.txt"

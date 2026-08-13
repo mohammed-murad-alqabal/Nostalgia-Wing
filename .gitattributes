@@ -1,0 +1,9 @@
+# Keep text files portable without rewriting existing history.
+* text=auto eol=lf
+
+# Binary assets must not be normalized.
+*.png binary
+*.ttf binary
+*.ico binary
+*.aab binary
+*.apk binary
