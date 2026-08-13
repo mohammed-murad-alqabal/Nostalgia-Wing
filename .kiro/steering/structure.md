@@ -81,9 +81,6 @@ assets/
 ├── data/                   # JSON configuration files
 │   ├── message_templates.json
 │   └── compliance_manifest.json
-├── fonts/                  # Custom fonts (Arabic support)
-│   ├── Amiri-Regular.ttf
-│   └── Amiri-Bold.ttf
 ├── images/                 # Static images
 ├── lottie/                 # Animation files
 └── sounds/                 # Audio files
