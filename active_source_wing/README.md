@@ -1,8 +1,8 @@
 # 🕊️ Wing of Nostalgia | جناح الحنين
 
-[![Institutional QA](https://github.com/${{ github.repository }}/actions/workflows/institutional_qa.yml/badge.svg)](https://github.com/${{ github.repository }}/actions/workflows/institutional_qa.yml)
-[![Institutional Security](https://github.com/${{ github.repository }}/actions/workflows/maintenance.yml/badge.svg)](https://github.com/${{ github.repository }}/actions/workflows/maintenance.yml)
-[![Documentation Sync](https://github.com/${{ github.repository }}/actions/workflows/documentation.yml/badge.svg)](https://github.com/${{ github.repository }}/actions/workflows/documentation.yml)
+[![Flutter CI](https://github.com/mohammed-murad-alqabal/Nostalgia-Wing/actions/workflows/flutter_ci.yml/badge.svg)](https://github.com/mohammed-murad-alqabal/Nostalgia-Wing/actions/workflows/flutter_ci.yml)
+[![Repository governance](https://github.com/mohammed-murad-alqabal/Nostalgia-Wing/actions/workflows/repository_governance.yml/badge.svg)](https://github.com/mohammed-murad-alqabal/Nostalgia-Wing/actions/workflows/repository_governance.yml)
+[![Release validation](https://github.com/mohammed-murad-alqabal/Nostalgia-Wing/actions/workflows/release_validation.yml/badge.svg)](https://github.com/mohammed-murad-alqabal/Nostalgia-Wing/actions/workflows/release_validation.yml)
 
 > كيان هندسي حي للحب والحنين مع الإطار التنفيذي المؤسسي (SEF)
 > [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -116,4 +116,4 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [repository LICENSE](../LICENSE) for details.
