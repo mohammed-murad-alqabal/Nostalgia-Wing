@@ -91,7 +91,15 @@ def main() -> int:
 
     if policy.get("warn_on_retired_branch_references", False):
         for branch in policy.get("branch", {}).get("retired", []):
-            output = run_git("grep", "-n", "-I", "-E", rf"(^|[^A-Za-z0-9_-]){branch}([^A-Za-z0-9_-]|$)", "HEAD", "--", ".github")
+            output = run_git(
+                "grep",
+                "-n",
+                "-I",
+                "-E",
+                rf"(^|[^A-Za-z0-9_-]){branch}([^A-Za-z0-9_-]|$)",
+                "--",
+                ".github",
+            )
             for line in output.splitlines():
                 warnings.append(f"retired branch reference: {line}")
 
