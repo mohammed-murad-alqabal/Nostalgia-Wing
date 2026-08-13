@@ -44,5 +44,6 @@ app.*.map.json
 
 # Project specific
 logs/
+coverage/
 *.hive
 *.lock

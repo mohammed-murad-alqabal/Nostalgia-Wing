@@ -62,3 +62,9 @@ secrets.yaml
 
 # Generated repository-health report (uploaded by CI; never committed)
 /reports/repository-health.md
+
+# Local environment files
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.sample
