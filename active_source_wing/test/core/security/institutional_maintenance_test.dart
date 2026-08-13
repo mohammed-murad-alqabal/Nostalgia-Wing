@@ -18,6 +18,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+  final binaryMessenger =
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   late Directory tempDir;
   late AppDatabase database;
   late _TrackingKeyManager keyManager;
@@ -27,7 +29,7 @@ void main() {
     Hive.init(tempDir.path);
     SharedPreferences.setMockInitialValues({'test_key': 'test_value'});
 
-    pathProviderChannel.setMockMethodCallHandler((call) async {
+    binaryMessenger.setMockMethodCallHandler(pathProviderChannel, (call) async {
       if (call.method == 'getApplicationDocumentsDirectory') {
         return tempDir.path;
       }
@@ -49,8 +51,8 @@ void main() {
   tearDown(() async {
     await sl.reset();
     await Hive.close();
-    await tempDir.delete(recursive: true);
-    pathProviderChannel.setMockMethodCallHandler(null);
+    tempDir.deleteSync(recursive: true);
+    binaryMessenger.setMockMethodCallHandler(pathProviderChannel, null);
   });
 
   test(
@@ -61,34 +63,26 @@ void main() {
       await File('${secureMediaDir.path}/memory.enc')
           .writeAsString('ciphertext');
 
-      final memoryId = await database
-          .into(database.memories)
-          .insert(
+      final memoryId = await database.into(database.memories).insert(
             MemoriesCompanion.insert(
               title: 'Encrypted title',
               encryptedContent: 'Encrypted content',
               createdAt: drift.Value(DateTime.now()),
             ),
           );
-      await database
-          .into(database.reflections)
-          .insert(
+      await database.into(database.reflections).insert(
             ReflectionsCompanion.insert(
               memoryId: memoryId,
               aiInsight: 'Insight',
             ),
           );
-      await database
-          .into(database.sentMessages)
-          .insert(
+      await database.into(database.sentMessages).insert(
             SentMessagesCompanion.insert(
               encryptedContent: 'Encrypted message',
               type: 'morning',
             ),
           );
-      await database
-          .into(database.surprises)
-          .insert(
+      await database.into(database.surprises).insert(
             SurprisesCompanion.insert(
               encryptedContent: 'Encrypted surprise',
               type: 'growth',
@@ -101,7 +95,7 @@ void main() {
       expect(await database.select(database.reflections).get(), isEmpty);
       expect(await database.select(database.sentMessages).get(), isEmpty);
       expect(await database.select(database.surprises).get(), isEmpty);
-      expect(await secureMediaDir.exists(), isFalse);
+      expect(secureMediaDir.existsSync(), isFalse);
       expect(
         (await SharedPreferences.getInstance()).getString('test_key'),
         isNull,

@@ -341,6 +341,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     try {
       // تنظيف الموارد
       _adaptationService.removeListener(_onPerformanceAdaptation);
+      PerformanceMonitor().stopMonitoring();
       _animationResource.cleanup();
       _memoryManager.unregisterResource(_animationResource);
 
@@ -507,13 +508,13 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     final isDynamic = _adaptationService.useDynamic;
     final mode = isDynamic ? 'Dynamic' : 'Manual';
 
-    return GestureDetector(
-      onTap: () => setState(() {
-        _showPerformanceMenu = !_showPerformanceMenu;
-      }),
-      child: Positioned(
-        top: 10,
-        right: 10,
+    return Positioned(
+      top: 10,
+      right: 10,
+      child: GestureDetector(
+        onTap: () => setState(() {
+          _showPerformanceMenu = !_showPerformanceMenu;
+        }),
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(

@@ -566,7 +566,7 @@ class EmergencyApp extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'رمز الحادثة: ${incidentId}',
+                          'رمز الحادثة: $incidentId',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
