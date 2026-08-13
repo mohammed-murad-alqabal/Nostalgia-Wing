@@ -3,12 +3,16 @@
 library;
 
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import '../infrastructure/wing_logger.dart';
 
-/// مدير البيانات الآمنة
-/// يتولى تشفير وفك تشفير البيانات الحساسة
+/// مدير بيانات قديم متوافق مع تنسيقات تاريخية فقط.
+///
+/// لا تستخدم هذه الواجهة لتشفير بيانات جديدة؛ تعتمد تنفيذ XOR قديم، بينما
+/// المسار المعتمد للتشفير الجديد هو [SecurityService] المبني على AES-256-GCM.
+@Deprecated('Use SecurityService (AES-256-GCM) for all new sensitive data.')
 class SecureDataManager {
   static const String _saltKey = 'WingOfNostalgia2025';
   static const int _keyLength = 32;
@@ -90,7 +94,7 @@ class SecureDataManager {
     return Uint8List.fromList(keyHash.bytes.take(_keyLength).toList());
   }
 
-  /// تشفير XOR بسيط ولكن فعال
+  /// تشفير XOR تاريخي للتوافق فقط، ولا يصلح لحماية بيانات جديدة.
   static Uint8List _xorEncrypt(List<int> data, Uint8List key) {
     final result = Uint8List(data.length);
     for (int i = 0; i < data.length; i++) {
@@ -110,7 +114,7 @@ class SecureDataManager {
   ///
   /// [password] كلمة المرور المراد فحصها
   ///
-  /// Returns مستوى قوة كلمة المرور (0-4)
+  /// Returns مستوى قوة كلمة المرور (0-5)
   static int checkPasswordStrength(String password) {
     int strength = 0;
 
@@ -134,12 +138,11 @@ class SecureDataManager {
         '0123456789'
         '!@#\$%^&*()_+-=[]{}|;:,.<>?';
 
-    final random = DateTime.now().millisecondsSinceEpoch;
+    final random = Random.secure();
     final result = StringBuffer();
 
     for (int i = 0; i < length; i++) {
-      final index = (random + i * 7) % chars.length;
-      result.write(chars[index]);
+      result.write(chars[random.nextInt(chars.length)]);
     }
 
     return result.toString();

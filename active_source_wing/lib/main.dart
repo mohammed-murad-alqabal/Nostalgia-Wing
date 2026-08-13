@@ -68,17 +68,24 @@ void main() async {
       safetyBoxService: result.safetyBoxService,
     ));
   } catch (e, stackTrace) {
+    final incidentId =
+        DateTime.now().microsecondsSinceEpoch.toRadixString(36).toUpperCase();
+
     WingLogger.critical(
       'فشل في تهيئة التطبيق',
       tag: 'Main',
-      data: {'error': e.toString()},
+      data: {
+        'incident_id': incidentId,
+        'error': e.toString(),
+      },
       stackTrace: stackTrace,
     );
 
-    DependencyHealthMonitor.reportFailure('startup', e.toString());
+    // لا تُمرر تفاصيل الاستثناء إلى واجهة المستخدم أو مراقب الصحة.
+    DependencyHealthMonitor.reportFailure('startup', 'initialization_failed');
 
-    // تشغيل التطبيق في وضع الطوارئ مع عرض الخطأ
-    runApp(EmergencyApp(error: e.toString()));
+    // تشغيل التطبيق في وضع طوارئ آمن مع معرّف يمكن ربطه بالسجل.
+    runApp(EmergencyApp(incidentId: incidentId));
   }
 }
 
@@ -365,8 +372,7 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _isLoading = true;
-  // Removed unused field _isAuthenticated since it's not used in logic yet.
-  // bool _isAuthenticated = false;
+  bool _isAuthenticated = false;
 
   @override
   void initState() {
@@ -381,7 +387,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
       if (mounted) {
         setState(() {
-          // just update loading state
+          _isAuthenticated = isAuthenticated;
           _isLoading = false;
         });
       }
@@ -397,12 +403,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
       WingLogger.error(
         'فشل في فحص المصادقة',
         tag: 'Auth',
-        data: {'error': e.toString()},
+        data: {'error_type': e.runtimeType.toString()},
         stackTrace: stackTrace,
       );
 
       if (mounted) {
         setState(() {
+          _isAuthenticated = false;
           _isLoading = false;
         });
       }
@@ -457,6 +464,32 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
+    if (!_isAuthenticated) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_outline, size: 48),
+                const SizedBox(height: 16),
+                const Text(
+                  'تعذر التحقق من صلاحية الوصول. يرجى إعادة فتح التطبيق.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: _checkAuthentication,
+                  child: const Text('إعادة المحاولة'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return const HomeScreen();
   }
 }
@@ -474,10 +507,10 @@ class _ErrorBoundary extends StatelessWidget {
 /// Emergency application widget shown when initialization fails.
 class EmergencyApp extends StatelessWidget {
   /// Creates [EmergencyApp].
-  const EmergencyApp({super.key, this.error});
+  const EmergencyApp({super.key, required this.incidentId});
 
-  /// The error message.
-  final String? error;
+  /// رمز حادثة آمن لربط رسالة المستخدم بالسجلات التشخيصية.
+  final String incidentId;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -515,33 +548,32 @@ class EmergencyApp extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'يتم تهيئة التطبيق في وضع الاستقرار التقني...',
+                        'تعذر بدء التطبيق بأمان. يرجى إغلاقه ثم إعادة فتحه.',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.white70,
                         ),
                       ),
-                      if (error != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: Colors.red.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Text(
-                            'خطأ: $error',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.3),
                           ),
                         ),
-                      ],
+                        child: Text(
+                          'رمز الحادثة: ${incidentId}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       const CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),

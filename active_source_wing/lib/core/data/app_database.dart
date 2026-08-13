@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -116,6 +117,25 @@ class AppDatabase extends _$AppDatabase {
           }
         },
       );
+
+  /// Permanently removes all user-generated records from local persistence.
+  ///
+  /// Child rows are removed before their parent memories to preserve foreign
+  /// key integrity. SQLite secure-delete and vacuum are applied after the
+  /// transaction so that deleted payloads do not remain in free database
+  /// pages.
+  Future<void> clearAllSensitiveData() async {
+    await customStatement('PRAGMA secure_delete = ON;');
+
+    await transaction(() async {
+      await delete(reflections).go();
+      await delete(memories).go();
+      await delete(sentMessages).go();
+      await delete(surprises).go();
+    });
+
+    await customStatement('VACUUM;');
+  }
 }
 
 LazyDatabase _openConnection() => LazyDatabase(() async {

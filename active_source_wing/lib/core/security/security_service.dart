@@ -5,6 +5,9 @@ import 'package:cryptography/cryptography.dart';
 /// [SecurityService] handles encryption of sensitive marital data.
 /// It uses AES-256-GCM for authenticated encryption.
 class SecurityService {
+  static const int _nonceLength = 12;
+  static const int _macLength = 16;
+
   /// The AES-GCM algorithm instance.
   final AesGcm algorithm = AesGcm.with256bits();
 
@@ -31,12 +34,14 @@ class SecurityService {
   /// Decrypts a [cipherBase64] using the provided [secretKey].
   Future<String> decrypt(String cipherBase64, SecretKey secretKey) async {
     final combinedBytes = base64.decode(cipherBase64);
+    _validateEncryptedPayload(combinedBytes);
 
-    // AES-GCM nonce is typically 12 bytes
-    final nonce = combinedBytes.sublist(0, 12);
-    // MAC is typically 16 bytes for AES-GCM
-    final macBytes = combinedBytes.sublist(combinedBytes.length - 16);
-    final cipherText = combinedBytes.sublist(12, combinedBytes.length - 16);
+    final nonce = combinedBytes.sublist(0, _nonceLength);
+    final macBytes = combinedBytes.sublist(combinedBytes.length - _macLength);
+    final cipherText = combinedBytes.sublist(
+      _nonceLength,
+      combinedBytes.length - _macLength,
+    );
 
     final secretBox = SecretBox(
       cipherText,
@@ -70,9 +75,14 @@ class SecurityService {
   /// Decrypts [encryptedBytes] using the provided [secretKey].
   Future<Uint8List> decryptBytes(
       Uint8List encryptedBytes, SecretKey secretKey) async {
-    final nonce = encryptedBytes.sublist(0, 12);
-    final macBytes = encryptedBytes.sublist(encryptedBytes.length - 16);
-    final cipherText = encryptedBytes.sublist(12, encryptedBytes.length - 16);
+    _validateEncryptedPayload(encryptedBytes);
+
+    final nonce = encryptedBytes.sublist(0, _nonceLength);
+    final macBytes = encryptedBytes.sublist(encryptedBytes.length - _macLength);
+    final cipherText = encryptedBytes.sublist(
+      _nonceLength,
+      encryptedBytes.length - _macLength,
+    );
 
     final secretBox = SecretBox(
       cipherText,
@@ -86,5 +96,11 @@ class SecurityService {
     );
 
     return Uint8List.fromList(clearTextBytes);
+  }
+
+  void _validateEncryptedPayload(List<int> payload) {
+    if (payload.length < _nonceLength + _macLength) {
+      throw const FormatException('Encrypted payload is too short for AES-GCM.');
+    }
   }
 }

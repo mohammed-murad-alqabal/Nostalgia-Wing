@@ -169,9 +169,17 @@ class PerformanceMonitor {
       _metrics.removeRange(0, _metrics.length - 50);
     }
 
-    // إشعار النظام بالحاجة لتنظيف الذاكرة
-    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+    // لا ينبغي أن يؤدي ضغط الذاكرة إلى إغلاق التطبيق. يُترك النظام
+    // لإدارة الذاكرة، بينما يحتفظ التطبيق بالبيانات التشخيصية الحديثة فقط.
   }
+
+  /// نقطة اختبار لمسار تنظيف الذاكرة من دون محاكاة ضغط منصة حقيقي.
+  @visibleForTesting
+  void triggerMemoryCleanupForTesting() => _triggerMemoryCleanup();
+
+  /// عدد المقاييس المحتفظ بها بعد تنظيف الذاكرة.
+  @visibleForTesting
+  int get retainedMetricsCount => _metrics.length;
 
   /// الحصول على تقرير الأداء
   PerformanceReport getPerformanceReport() {

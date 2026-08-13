@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# يمنع إتمام دمج محلي إذا فشلت بوابة جودة Flutter.
+
+set -Eeuo pipefail
+
+readonly REPOSITORY_ROOT="$(git rev-parse --show-toplevel)"
+readonly VERIFY_SCRIPT="${REPOSITORY_ROOT}/active_source_wing/tool/verify_flutter.sh"
+
+if [[ ! -x "${VERIFY_SCRIPT}" ]]; then
+  printf 'ERROR: Flutter quality script is missing or not executable: %s\n' \
+    "${VERIFY_SCRIPT}" >&2
+  exit 1
+fi
+
+printf '\nRunning Flutter quality gate before merge...\n'
+exec "${VERIFY_SCRIPT}"

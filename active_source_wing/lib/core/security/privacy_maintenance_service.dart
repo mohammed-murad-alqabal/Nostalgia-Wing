@@ -1,5 +1,10 @@
+import 'dart:io';
+
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../di/service_locator.dart';
 import '../infrastructure/wing_logger.dart';
 import '../services/auth_service.dart';
 import '../services/safety_box_service.dart';
@@ -19,20 +24,24 @@ class PrivacyMaintenanceService {
     );
 
     try {
-      // 1. مسح صناديق Hive
-      // Clear Hive boxes
+      // 1. مسح ملفات الوسائط المشفرة، بما في ذلك الملفات اليتيمة.
+      await _clearEncryptedMedia();
+
+      // 2. مسح البيانات العلائقية قبل حذف المفتاح الذي يحميها.
+      await sl.database.clearAllSensitiveData();
+
+      // 3. مسح صناديق Hive.
       await Hive.deleteBoxFromDisk(PsychologicalContextManager.boxName);
       await Hive.deleteBoxFromDisk(SafetyBoxService.boxName);
 
-      // 2. مسح الإعدادات المفضلة
-      // Clear SharedPreferences
+      // 4. مسح الإعدادات المحلية.
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
 
-      // 3. إعادة تعيين الخدمات النشطة
-      // Reset active services
-      AuthService.instance.logout();
+      // 5. إعادة تعيين الجلسة ثم إبطال المفتاح الرئيسي.
+      await AuthService.instance.logout();
       AuthService.instance.dispose();
+      await sl.keyManager.clearMasterKey();
 
       WingLogger.critical(
         'PRIVACY MAINTENANCE COMPLETED: Project is now in a state of purity '
@@ -47,6 +56,19 @@ class PrivacyMaintenanceService {
         stackTrace: stackTrace,
       );
       rethrow;
+    }
+  }
+
+  /// Removes the application-owned directory containing encrypted memory media.
+  ///
+  /// The directory is deleted as a whole so unreferenced encrypted files cannot
+  /// survive a successful privacy reset.
+  static Future<void> _clearEncryptedMedia() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final secureMediaDir = Directory(p.join(appDir.path, 'secure_media'));
+
+    if (await secureMediaDir.exists()) {
+      await secureMediaDir.delete(recursive: true);
     }
   }
 }
