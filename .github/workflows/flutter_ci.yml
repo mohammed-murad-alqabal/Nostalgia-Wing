@@ -1,5 +1,9 @@
 name: Flutter CI
 
+# Keep JavaScript-based actions on the supported Node 24 runtime.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   pull_request:
     branches: [main]
@@ -20,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run documentation-governance regression tests
         run: python3 test_verify_documentation_governance.py
       - name: Verify documentation governance
@@ -33,12 +37,12 @@ jobs:
         working-directory: ./active_source_wing
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: 3.47.0
           cache: true
           pub-cache: true
 
