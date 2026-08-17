@@ -26,6 +26,14 @@ The application currently has no automatic time-to-live or age-based deletion fo
 
 Automatic expiry remains a product decision and is intentionally outside this change. It must not be added as an incidental consequence of introducing audit metadata or migration fixtures.
 
+## SafetyBoxService isolation boundary
+
+`SafetyBoxService` remains a compatibility reader for the historical Hive box `safety_box_vault`. Its historical XOR-and-SHA-256 payload has no nonce, authenticated MAC, or versioned envelope, so it is not an approved format for new sensitive data.
+
+New legacy writes are disabled by default. The write path can be enabled only through an explicit `allowLegacyWrites: true` opt-in for a controlled compatibility test or a future, separately reviewed migration. Reading historical records, enumerating legacy identifiers, deleting records, and deleting the box during privacy reset remain available so existing data is not silently discarded.
+
+Any new sensitive storage must use the authenticated encryption service rather than `SafetyBoxService`. A future migration may read the legacy payload, write a versioned authenticated envelope, verify the result, and delete the old record only after successful conversion. This PR does not claim that such migration has occurred, and it does not remove or rename the historical box.
+
 ## Drift v2 to v3 migration evidence
 
 The migration fixture represents a populated version 2 database containing `memories` and `reflections` rows with stable identifiers, timestamps, nullable fields, and representative encrypted placeholders. Its SQLite `user_version` is 2. Opening the fixture through `AppDatabase` must execute the existing migration and create `sent_messages` and `surprises`.
