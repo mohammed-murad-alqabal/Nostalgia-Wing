@@ -1,6 +1,19 @@
 import '../infrastructure/wing_logger.dart';
 
-/// Service for managing user authentication.
+/// Thrown when a protected local operation is attempted without a session.
+class AuthenticationRequiredException implements Exception {
+  const AuthenticationRequiredException();
+
+  @override
+  String toString() =>
+      'AuthenticationRequiredException: an authenticated local session is required';
+}
+
+/// Service for managing the local authentication session.
+///
+/// This service currently establishes an in-memory local session. It does not
+/// claim to verify an external identity; a future identity provider can be
+/// added behind this contract without weakening the storage boundary.
 class AuthService {
   AuthService._();
   static AuthService? _instance;
@@ -16,7 +29,6 @@ class AuthService {
     if (_isInitialized) return;
 
     try {
-      // Basic initialization
       _isInitialized = true;
       WingLogger.info('Auth service initialized successfully', tag: 'Auth');
     } catch (e) {
@@ -25,12 +37,15 @@ class AuthService {
     }
   }
 
-  /// Authenticates the user.
+  /// Opens the local session.
+  ///
+  /// This is intentionally a local session contract only. It is not an
+  /// external identity check until a real provider is introduced.
   Future<bool> authenticate() async {
     try {
-      // For now, always return true (no actual authentication)
+      await initialize();
       _isAuthenticated = true;
-      WingLogger.info('Authentication successful', tag: 'Auth');
+      WingLogger.info('Local authentication session opened', tag: 'Auth');
       return true;
     } catch (e) {
       WingLogger.error('Authentication failed: $e', tag: 'Auth');
@@ -38,18 +53,26 @@ class AuthService {
     }
   }
 
-  /// Whether the user is authenticated.
+  /// Whether the local session is currently authenticated.
   bool get isAuthenticated => _isAuthenticated;
 
-  /// Logs out the user.
+  /// Throws when a protected local operation lacks an active session.
+  void requireAuthenticated() {
+    if (!_isAuthenticated) {
+      throw const AuthenticationRequiredException();
+    }
+  }
+
+  /// Logs out the user and invalidates the local session.
   Future<void> logout() async {
     _isAuthenticated = false;
-    WingLogger.info('User logged out', tag: 'Auth');
+    WingLogger.info('Local authentication session closed', tag: 'Auth');
   }
 
   /// Disposes resources.
   void dispose() {
     _isAuthenticated = false;
+    _isInitialized = false;
     _instance = null;
   }
 }
