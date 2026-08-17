@@ -36,7 +36,7 @@ import 'features/home/widgets/cognitive_identity_widgets.dart';
 
 /// التطبيق الرئيسي - جناح الحنين
 /// كيان هندسي حي للحب والحنين مع نظام ذكاء عاطفي متقدم
-void main() async {
+Future<void> main() async {
   // تهيئة Flutter
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -85,7 +85,12 @@ void main() async {
     DependencyHealthMonitor.reportFailure('startup', 'initialization_failed');
 
     // تشغيل التطبيق في وضع طوارئ آمن مع معرّف يمكن ربطه بالسجل.
-    runApp(EmergencyApp(incidentId: incidentId));
+    runApp(
+      EmergencyApp(
+        incidentId: incidentId,
+        onRetry: main,
+      ),
+    );
   }
 }
 
@@ -505,12 +510,42 @@ class _ErrorBoundary extends StatelessWidget {
 
 /// تطبيق الطوارئ في حالة فشل التهيئة
 /// Emergency application widget shown when initialization fails.
-class EmergencyApp extends StatelessWidget {
+class EmergencyApp extends StatefulWidget {
   /// Creates [EmergencyApp].
-  const EmergencyApp({super.key, required this.incidentId});
+  const EmergencyApp({
+    super.key,
+    required this.incidentId,
+    this.onRetry,
+  });
 
   /// رمز حادثة آمن لربط رسالة المستخدم بالسجلات التشخيصية.
   final String incidentId;
+
+  /// إعادة محاولة تهيئة التطبيق دون كشف تفاصيل الفشل للمستخدم.
+  final Future<void> Function()? onRetry;
+
+  @override
+  State<EmergencyApp> createState() => _EmergencyAppState();
+}
+
+class _EmergencyAppState extends State<EmergencyApp> {
+  bool _isRetrying = false;
+
+  Future<void> _retryInitialization() async {
+    final onRetry = widget.onRetry;
+    if (onRetry == null || _isRetrying) {
+      return;
+    }
+
+    setState(() => _isRetrying = true);
+    try {
+      await onRetry();
+    } finally {
+      if (mounted) {
+        setState(() => _isRetrying = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -548,7 +583,7 @@ class EmergencyApp extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'تعذر بدء التطبيق بأمان. يرجى إغلاقه ثم إعادة فتحه.',
+                        'تعذر بدء التطبيق بأمان. يمكنك إعادة المحاولة الآن.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,
@@ -566,7 +601,7 @@ class EmergencyApp extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'رمز الحادثة: $incidentId',
+                          'رمز الحادثة: ${widget.incidentId}',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
@@ -574,10 +609,26 @@ class EmergencyApp extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                      if (widget.onRetry != null) ...[
+                        const SizedBox(height: 24),
+                        OutlinedButton(
+                          onPressed:
+                              _isRetrying ? null : _retryInitialization,
+                          child: _isRetrying
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor:
+                                        AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text('إعادة المحاولة'),
+                        ),
+                      ],
                     ],
                   ),
                 ),
