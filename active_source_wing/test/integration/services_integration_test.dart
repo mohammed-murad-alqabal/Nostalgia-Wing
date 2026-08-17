@@ -48,6 +48,41 @@ void main() {
       );
     });
 
+    test('All protected table reads reject access after logout', () async {
+      await authService.authenticate();
+      await authService.logout();
+
+      expect(
+        () => dbService.getMemories(),
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
+      expect(
+        () => dbService.getSentMessages(),
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
+      expect(
+        () => dbService.getSurprises(),
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
+    });
+
+    test('Disposing the session invalidates the bound DB service', () async {
+      await authService.authenticate();
+      expect(await dbService.getMemories(), isEmpty);
+
+      authService.dispose();
+
+      expect(
+        () => dbService.getMemories(),
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
+
+      final freshAuthService = AuthService.instance;
+      final freshDbService = DBService();
+      await freshAuthService.authenticate();
+      expect(await freshDbService.getMemories(), isEmpty);
+    });
+
     test('Auth and DB services should work together', () async {
       final isAuthenticated = await authService.authenticate();
       expect(isAuthenticated, isTrue);
