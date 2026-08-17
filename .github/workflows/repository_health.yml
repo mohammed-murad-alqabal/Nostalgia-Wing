@@ -1,5 +1,9 @@
 name: Repository health report
 
+# Keep JavaScript-based actions on the supported Node 24 runtime.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   schedule:
     - cron: "23 7 * * 1"
@@ -14,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout full history
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -28,7 +32,7 @@ jobs:
         run: git fsck --full --no-dangling
 
       - name: Upload report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: repository-health-${{ github.run_id }}
           path: reports/repository-health.md
