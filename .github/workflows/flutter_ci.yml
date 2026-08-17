@@ -53,3 +53,31 @@ jobs:
 
       - name: Run unified quality gate
         run: bash tool/verify_flutter.sh
+
+  platform-integration:
+    name: Android privacy reset integration
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v5
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.0
+          cache: true
+          pub-cache: true
+
+      - name: Run privacy reset and restart test on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          force-avd-creation: false
+          emulator-options: -no-window -no-audio -no-boot-anim
+          disable-animations: true
+          script: cd active_source_wing && flutter pub get && flutter test integration_test/privacy_reset_restart_test.dart -d emulator-5554
