@@ -7,7 +7,6 @@ void main() {
 
     setUp(() async {
       authService = AuthService.instance;
-      // Ensure clean state if possible
       await authService.logout();
     });
 
@@ -21,6 +20,22 @@ void main() {
 
       expect(result, isTrue);
       expect(authService.isAuthenticated, isTrue);
+    });
+
+    test('Protected operations require an authenticated session', () async {
+      expect(
+        authService.requireAuthenticated,
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
+
+      await authService.authenticate();
+      expect(authService.requireAuthenticated, returnsNormally);
+
+      await authService.logout();
+      expect(
+        authService.requireAuthenticated,
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
     });
 
     test('Logout should set isAuthenticated to false', () async {

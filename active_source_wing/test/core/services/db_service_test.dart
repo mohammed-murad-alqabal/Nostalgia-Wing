@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/native.dart';
 import 'package:wing_of_nostalgia/core/data/app_database.dart';
+import 'package:wing_of_nostalgia/core/services/auth_service.dart';
 import 'package:wing_of_nostalgia/core/services/db_service.dart';
 import 'package:wing_of_nostalgia/core/di/service_locator.dart';
 import 'package:drift/drift.dart' as drift;
@@ -20,14 +21,43 @@ void main() {
     await sl.initialize(testDb: db);
 
     dbService = DBService();
+    await AuthService.instance.logout();
   });
 
   tearDown(() async {
+    await AuthService.instance.logout();
     await db.close();
     await sl.reset();
   });
 
+  group('DBService - Authentication Contract', () {
+    test('rejects database access without an authenticated session', () async {
+      await AuthService.instance.logout();
+
+      expect(
+        () => dbService.getMemories(),
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
+    });
+
+    test('rejects database access after logout', () async {
+      await AuthService.instance.authenticate();
+      expect(await dbService.getMemories(), isEmpty);
+
+      await AuthService.instance.logout();
+
+      expect(
+        () => dbService.getMemories(),
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
+    });
+  });
+
   group('DBService - Memory Operations (Drift)', () {
+    setUp(() async {
+      await AuthService.instance.authenticate();
+    });
+
     test('Should insert and retrieve a memory', () async {
       final memory = MemoriesCompanion.insert(
         title: 'Encrypted Title',

@@ -10,6 +10,7 @@ import 'package:wing_of_nostalgia/core/cognitive/psychological_context_manager.d
 import 'package:wing_of_nostalgia/core/cognitive/emotional_gravity_engine.dart';
 import 'package:wing_of_nostalgia/core/cognitive/relational_analytics_service.dart';
 import 'package:wing_of_nostalgia/core/cognitive/resonance_engine.dart';
+import 'package:wing_of_nostalgia/core/services/auth_service.dart';
 import 'package:wing_of_nostalgia/core/services/db_service.dart';
 import 'package:wing_of_nostalgia/core/services/notification_service.dart';
 import 'package:wing_of_nostalgia/core/services/emotional_message_service.dart';
@@ -55,9 +56,11 @@ void main() {
       analyticsService = RelationalAnalyticsService();
       resonanceEngine = ResonanceEngine();
       dbService = DBService();
+      await AuthService.instance.authenticate();
     });
 
     tearDown(() async {
+      await AuthService.instance.logout();
       await db.close();
       await sl.reset();
     });
