@@ -11,6 +11,7 @@ import 'package:wing_of_nostalgia/core/data/app_database.dart';
 import 'package:wing_of_nostalgia/core/di/service_locator.dart';
 import 'package:wing_of_nostalgia/core/security/key_manager.dart';
 import 'package:wing_of_nostalgia/core/security/privacy_maintenance_service.dart';
+import 'package:wing_of_nostalgia/core/security/privacy_reset_audit_store.dart';
 import 'package:wing_of_nostalgia/core/services/auth_service.dart';
 import 'package:wing_of_nostalgia/core/services/safety_box_service.dart';
 
@@ -24,6 +25,8 @@ void main() {
   late File databaseFile;
   late AppDatabase database;
   late _TrackingKeyManager keyManager;
+  late PrivacyResetAuditStore auditStore;
+  late _InMemoryPrivacyResetAuditStorage auditStorage;
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('privacy-maintenance-');
@@ -42,6 +45,8 @@ void main() {
     await sl.initialize(testDb: database);
     keyManager = _TrackingKeyManager();
     sl.keyManager = keyManager;
+    auditStorage = _InMemoryPrivacyResetAuditStorage();
+    auditStore = PrivacyResetAuditStore(storage: auditStorage);
 
     await AuthService.instance.initialize();
     await AuthService.instance.authenticate();
@@ -93,7 +98,19 @@ void main() {
             ),
           );
 
-      await PrivacyMaintenanceService.maintenanceReset();
+      await PrivacyMaintenanceService.maintenanceReset(
+        auditStore: auditStore,
+      );
+
+      final audit = await auditStore.read();
+      expect(audit, isNotNull);
+      expect(audit!.status, PrivacyResetAuditStatus.succeeded);
+      expect(audit.startedAt.isUtc, isTrue);
+      expect(audit.finishedAt, isNotNull);
+      expect(audit.finishedAt!.isUtc, isTrue);
+      expect(audit.finishedAt!.isAfter(audit.startedAt), isTrue);
+      expect(audit.failedStep, isNull);
+      expect(audit.errorType, isNull);
 
       expect(sl.isInitialized, isFalse);
       expect(secureMediaDir.existsSync(), isFalse);
@@ -135,12 +152,19 @@ void main() {
     sl.keyManager = _FailingKeyManager();
 
     await expectLater(
-      PrivacyMaintenanceService.maintenanceReset(),
+      PrivacyMaintenanceService.maintenanceReset(auditStore: auditStore),
       throwsA(isA<StateError>()),
     );
 
     // يفشل المسار بصورة ظاهرة للمستدعي ولا يدّعي نجاح التصفير، مع إغلاق
     // الموارد حتى لا يبقى التطبيق مهيأً بمفتاح غير صالح.
+    final audit = await auditStore.read();
+    expect(audit, isNotNull);
+    expect(audit!.status, PrivacyResetAuditStatus.failed);
+    expect(audit.failedStep, 'master key invalidation');
+    expect(audit.errorType, 'StateError');
+    expect(audit.finishedAt, isNotNull);
+
     expect(sl.isInitialized, isFalse);
     expect(
       (await SharedPreferences.getInstance()).getString('test_key'),
@@ -165,5 +189,17 @@ class _FailingKeyManager extends KeyManager {
   @override
   Future<void> clearMasterKey() {
     throw StateError('simulated key invalidation failure');
+  }
+}
+
+class _InMemoryPrivacyResetAuditStorage implements PrivacyResetAuditStorage {
+  final values = <String, String>{};
+
+  @override
+  Future<String?> read({required String key}) async => values[key];
+
+  @override
+  Future<void> write({required String key, required String value}) async {
+    values[key] = value;
   }
 }

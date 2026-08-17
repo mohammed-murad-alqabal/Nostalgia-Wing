@@ -10,6 +10,7 @@ import '../di/service_locator.dart';
 import '../infrastructure/wing_logger.dart';
 import '../services/auth_service.dart';
 import '../services/safety_box_service.dart';
+import 'privacy_reset_audit_store.dart';
 
 /// خدمة صيانة الخصوصية المعرفية
 /// Privacy Security Protocols
@@ -18,7 +19,25 @@ class PrivacyMaintenanceService {
 
   /// صيانة الخصوصية وتصفير البيانات - مسح جميع البيانات الحساسة والسياقات
   /// Privacy Maintenance Reset: Clears sensitive data & psychological contexts.
-  static Future<void> maintenanceReset() async {
+  static Future<void> maintenanceReset({
+    PrivacyResetAuditStore? auditStore,
+  }) async {
+    final resetAudit = auditStore ?? PrivacyResetAuditStore();
+    final startedAt = DateTime.now().toUtc();
+    String? firstFailedStep;
+
+    try {
+      await resetAudit.markStarted(startedAt);
+    } catch (error, stackTrace) {
+      // Audit persistence must never prevent the actual cleanup contract.
+      WingLogger.error(
+        'Privacy reset audit could not record start',
+        tag: 'SecurityProtocol',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
     WingLogger.critical(
       'PRIVACY MAINTENANCE STARTING: Total context erasure starting...',
       tag: 'SecurityProtocol',
@@ -33,6 +52,7 @@ class PrivacyMaintenanceService {
       } catch (error, stackTrace) {
         firstError ??= error;
         firstStackTrace ??= stackTrace;
+        firstFailedStep ??= step;
         WingLogger.error(
           'Privacy maintenance step failed: $step',
           tag: 'SecurityProtocol',
@@ -82,6 +102,31 @@ class PrivacyMaintenanceService {
     // failed. The app must not remain initialized with an invalid encryption
     // key or a partially reset data graph.
     await attempt('service locator shutdown', sl.reset);
+
+    final finishedAt = DateTime.now().toUtc();
+    try {
+      if (firstError == null) {
+        await resetAudit.markSucceeded(
+          startedAt: startedAt,
+          finishedAt: finishedAt,
+        );
+      } else {
+        await resetAudit.markFailed(
+          startedAt: startedAt,
+          finishedAt: finishedAt,
+          failedStep: firstFailedStep,
+          error: firstError!,
+        );
+      }
+    } catch (error, stackTrace) {
+      // Do not replace the cleanup result with an audit-storage failure.
+      WingLogger.error(
+        'Privacy reset audit could not record terminal outcome',
+        tag: 'SecurityProtocol',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
 
     if (firstError != null) {
       WingLogger.critical(
