@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT_PATH = Path(__file__).with_name("verify_documentation_governance.py")
+SCRIPT_PATH = Path(__file__).resolve().parent / "scripts" / "verify_documentation_governance.py"
 SPEC = importlib.util.spec_from_file_location("documentation_governance", SCRIPT_PATH)
 assert SPEC and SPEC.loader
 GOVERNANCE = importlib.util.module_from_spec(SPEC)
