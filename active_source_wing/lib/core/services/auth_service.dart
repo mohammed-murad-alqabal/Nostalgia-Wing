@@ -6,8 +6,7 @@ class AuthenticationRequiredException implements Exception {
   const AuthenticationRequiredException();
 
   @override
-  String toString() =>
-      'AuthenticationRequiredException: '
+  String toString() => 'AuthenticationRequiredException: '
       'an authenticated local session is required';
 }
 
