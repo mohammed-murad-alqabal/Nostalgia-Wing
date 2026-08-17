@@ -70,9 +70,8 @@ Future<void> main() async {
       ),
     );
   } catch (e, stackTrace) {
-    final incidentId = DateTime.now().microsecondsSinceEpoch
-        .toRadixString(36)
-        .toUpperCase();
+    final incidentId =
+        DateTime.now().microsecondsSinceEpoch.toRadixString(36).toUpperCase();
 
     WingLogger.critical(
       'فشل في تهيئة التطبيق',
@@ -146,139 +145,144 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
 
   @override
   Widget build(BuildContext context) => MultiProvider(
-    providers: [
-      // خدمات التطبيق (تم تهيئتها مسبقاً)
-      Provider<DBService>.value(value: widget.dbService),
-      Provider<AudioService>.value(value: AudioService.instance),
-      Provider<NotificationService>.value(value: widget.notificationService),
-      Provider<AuthService>.value(value: AuthService.instance),
-      Provider<EmotionalMessageService>.value(
-        value: widget.emotionalMessageService,
-      ),
-      Provider<SafetyBoxService>.value(value: widget.safetyBoxService),
-
-      // النظام النفسي
-      Provider<PsychologicalAnalysisEngine>.value(value: _psychEngine),
-      Provider<EmotionalAdaptationSystem>.value(value: _adaptationSystem),
-
-      // حالة التطبيق
-      ChangeNotifierProvider<AppStateProvider>(
-        create: (_) => AppStateProvider(),
-      ),
-      Provider<RelationalAnalyticsService>(
-        create: (_) => RelationalAnalyticsService(),
-      ),
-
-      // Psychological Context Manager
-      Provider<PsychologicalContextManager>.value(value: widget.contextManager),
-
-      // Cognitive Modules - Provided as singletons
-      // These still need to be created as they depend on services
-      // available in context.
-      Provider<EmotionalGravityEngine>(
-        create: (context) => EmotionalGravityEngine(
-          messageService: Provider.of<EmotionalMessageService>(
-            context,
-            listen: false,
+        providers: [
+          // خدمات التطبيق (تم تهيئتها مسبقاً)
+          Provider<DBService>.value(value: widget.dbService),
+          Provider<AudioService>.value(value: AudioService.instance),
+          Provider<NotificationService>.value(
+              value: widget.notificationService),
+          Provider<AuthService>.value(value: AuthService.instance),
+          Provider<EmotionalMessageService>.value(
+            value: widget.emotionalMessageService,
           ),
-          dbService: Provider.of<DBService>(context, listen: false),
-          notificationService: Provider.of<NotificationService>(
-            context,
-            listen: false,
+          Provider<SafetyBoxService>.value(value: widget.safetyBoxService),
+
+          // النظام النفسي
+          Provider<PsychologicalAnalysisEngine>.value(value: _psychEngine),
+          Provider<EmotionalAdaptationSystem>.value(value: _adaptationSystem),
+
+          // حالة التطبيق
+          ChangeNotifierProvider<AppStateProvider>(
+            create: (_) => AppStateProvider(),
           ),
-          contextManager: Provider.of<PsychologicalContextManager>(
-            context,
-            listen: false,
+          Provider<RelationalAnalyticsService>(
+            create: (_) => RelationalAnalyticsService(),
           ),
+
+          // Psychological Context Manager
+          Provider<PsychologicalContextManager>.value(
+              value: widget.contextManager),
+
+          // Cognitive Modules - Provided as singletons
+          // These still need to be created as they depend on services
+          // available in context.
+          Provider<EmotionalGravityEngine>(
+            create: (context) => EmotionalGravityEngine(
+              messageService: Provider.of<EmotionalMessageService>(
+                context,
+                listen: false,
+              ),
+              dbService: Provider.of<DBService>(context, listen: false),
+              notificationService: Provider.of<NotificationService>(
+                context,
+                listen: false,
+              ),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
+          Provider<SurpriseEvolutionEngine>(
+            create: (context) => SurpriseEvolutionEngine(
+              dbService: Provider.of<DBService>(context, listen: false),
+              notificationService: Provider.of<NotificationService>(
+                context,
+                listen: false,
+              ),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
+          Provider<DualTruthEngine>(
+            create: (context) => DualTruthEngine(
+              dbService: Provider.of<DBService>(context, listen: false),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
+          Provider<EmotionalEntanglementModule>(
+            create: (context) => EmotionalEntanglementModule(
+              dbService: Provider.of<DBService>(context, listen: false),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
+          Provider<CosmicSynchronizationModule>(
+            create: (context) => CosmicSynchronizationModule(
+              notificationService: Provider.of<NotificationService>(
+                context,
+                listen: false,
+              ),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
+          Provider<NonActionInterface>(
+            create: (context) => NonActionInterface(
+              emotionalGravityEngine: Provider.of<EmotionalGravityEngine>(
+                context,
+                listen: false,
+              ),
+              surpriseEvolutionEngine: Provider.of<SurpriseEvolutionEngine>(
+                context,
+                listen: false,
+              ),
+              dualTruthEngine:
+                  Provider.of<DualTruthEngine>(context, listen: false),
+              emotionalEntanglementModule:
+                  Provider.of<EmotionalEntanglementModule>(
+                context,
+                listen: false,
+              ),
+              cosmicSynchronizationModule:
+                  Provider.of<CosmicSynchronizationModule>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'جناح الحنين',
+          debugShowCheckedModeBanner: false,
+
+          // الثيم المتكيف عاطفياً
+          theme: _currentTheme,
+
+          // الاتجاه العربي
+          locale: const Locale('ar', 'SA'),
+
+          // الشاشة الرئيسية
+          home: AdaptiveUISystem(
+            userId: 'default_user',
+            onEmotionChanged: _onEmotionChanged, // سيتم تحديثه مع نظام المصادقة
+            child: const AuthWrapper(),
+          ),
+
+          // معالج الأخطاء
+          builder: (context, child) =>
+              _ErrorBoundary(child: child ?? const SizedBox.shrink()),
         ),
-      ),
-      Provider<SurpriseEvolutionEngine>(
-        create: (context) => SurpriseEvolutionEngine(
-          dbService: Provider.of<DBService>(context, listen: false),
-          notificationService: Provider.of<NotificationService>(
-            context,
-            listen: false,
-          ),
-          contextManager: Provider.of<PsychologicalContextManager>(
-            context,
-            listen: false,
-          ),
-        ),
-      ),
-      Provider<DualTruthEngine>(
-        create: (context) => DualTruthEngine(
-          dbService: Provider.of<DBService>(context, listen: false),
-          contextManager: Provider.of<PsychologicalContextManager>(
-            context,
-            listen: false,
-          ),
-        ),
-      ),
-      Provider<EmotionalEntanglementModule>(
-        create: (context) => EmotionalEntanglementModule(
-          dbService: Provider.of<DBService>(context, listen: false),
-          contextManager: Provider.of<PsychologicalContextManager>(
-            context,
-            listen: false,
-          ),
-        ),
-      ),
-      Provider<CosmicSynchronizationModule>(
-        create: (context) => CosmicSynchronizationModule(
-          notificationService: Provider.of<NotificationService>(
-            context,
-            listen: false,
-          ),
-          contextManager: Provider.of<PsychologicalContextManager>(
-            context,
-            listen: false,
-          ),
-        ),
-      ),
-      Provider<NonActionInterface>(
-        create: (context) => NonActionInterface(
-          emotionalGravityEngine: Provider.of<EmotionalGravityEngine>(
-            context,
-            listen: false,
-          ),
-          surpriseEvolutionEngine: Provider.of<SurpriseEvolutionEngine>(
-            context,
-            listen: false,
-          ),
-          dualTruthEngine: Provider.of<DualTruthEngine>(context, listen: false),
-          emotionalEntanglementModule: Provider.of<EmotionalEntanglementModule>(
-            context,
-            listen: false,
-          ),
-          cosmicSynchronizationModule: Provider.of<CosmicSynchronizationModule>(
-            context,
-            listen: false,
-          ),
-        ),
-      ),
-    ],
-    child: MaterialApp(
-      title: 'جناح الحنين',
-      debugShowCheckedModeBanner: false,
-
-      // الثيم المتكيف عاطفياً
-      theme: _currentTheme,
-
-      // الاتجاه العربي
-      locale: const Locale('ar', 'SA'),
-
-      // الشاشة الرئيسية
-      home: AdaptiveUISystem(
-        userId: 'default_user',
-        onEmotionChanged: _onEmotionChanged, // سيتم تحديثه مع نظام المصادقة
-        child: const AuthWrapper(),
-      ),
-
-      // معالج الأخطاء
-      builder: (context, child) =>
-          _ErrorBoundary(child: child ?? const SizedBox.shrink()),
-    ),
-  );
+      );
 
   /// معالج تغيير المشاعر
   void _onEmotionChanged(EmotionType newEmotion) {
@@ -555,82 +559,83 @@ class _EmergencyAppState extends State<EmergencyApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'جناح الحنين - وضع الطوارئ',
-    debugShowCheckedModeBanner: false,
-    home: Scaffold(
-      body: Stack(
-        children: [
-          const Positioned.fill(
-            child: CognitiveBackground(emotionalColor: Color(0xFF45B7D1)),
-          ),
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CognitiveLogo(),
-                  const SizedBox(height: 24),
-                  const Icon(
-                    Icons.warning_amber_rounded,
-                    size: 48,
-                    color: Colors.orangeAccent,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'جناح الحنين',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'تعذر بدء التطبيق بأمان. يمكنك إعادة المحاولة الآن.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.red.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Text(
-                      'رمز الحادثة: ${widget.incidentId}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ),
-                  if (widget.onRetry != null) ...[
-                    const SizedBox(height: 24),
-                    OutlinedButton(
-                      onPressed: _isRetrying ? null : _retryInitialization,
-                      child: _isRetrying
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            )
-                          : const Text('إعادة المحاولة'),
-                    ),
-                  ],
-                ],
+        title: 'جناح الحنين - وضع الطوارئ',
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Stack(
+            children: [
+              const Positioned.fill(
+                child: CognitiveBackground(emotionalColor: Color(0xFF45B7D1)),
               ),
-            ),
+              Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CognitiveLogo(),
+                      const SizedBox(height: 24),
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        size: 48,
+                        color: Colors.orangeAccent,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'جناح الحنين',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'تعذر بدء التطبيق بأمان. يمكنك إعادة المحاولة الآن.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.white70),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Text(
+                          'رمز الحادثة: ${widget.incidentId}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                      if (widget.onRetry != null) ...[
+                        const SizedBox(height: 24),
+                        OutlinedButton(
+                          onPressed: _isRetrying ? null : _retryInitialization,
+                          child: _isRetrying
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }
