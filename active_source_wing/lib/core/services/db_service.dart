@@ -5,6 +5,7 @@ import 'auth_service.dart';
 
 /// Service for handling authenticated local database operations using Drift.
 class DBService {
+  /// Creates a database service bound to the current local auth session.
   DBService({AuthService? authService})
       : _authService = authService ?? AuthService.instance,
         _db = sl.database;

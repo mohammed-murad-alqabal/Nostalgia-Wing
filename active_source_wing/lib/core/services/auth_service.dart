@@ -2,11 +2,13 @@ import '../infrastructure/wing_logger.dart';
 
 /// Thrown when a protected local operation is attempted without a session.
 class AuthenticationRequiredException implements Exception {
+  /// Creates an exception for an unauthenticated protected operation.
   const AuthenticationRequiredException();
 
   @override
   String toString() =>
-      'AuthenticationRequiredException: an authenticated local session is required';
+      'AuthenticationRequiredException: '
+      'an authenticated local session is required';
 }
 
 /// Service for managing the local authentication session.
