@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:drift/drift.dart' as drift;
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:integration_test/integration_test.dart';
@@ -10,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:wing_of_nostalgia/core/cognitive/psychological_context_manager.dart';
 import 'package:wing_of_nostalgia/core/data/app_database.dart';
 import 'package:wing_of_nostalgia/core/di/service_locator.dart';
-import 'package:wing_of_nostalgia/core/security/privacy_maintenance_service.dart';
 import 'package:wing_of_nostalgia/core/security/privacy_reset_audit_store.dart';
 import 'package:wing_of_nostalgia/main.dart' as app;
 
