@@ -1,26 +1,36 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/native.dart';
 import 'package:wing_of_nostalgia/core/data/app_database.dart';
 import 'package:wing_of_nostalgia/core/services/auth_service.dart';
 import 'package:wing_of_nostalgia/core/services/db_service.dart';
+import 'package:wing_of_nostalgia/core/services/secure_media_cleanup_service.dart';
 import 'package:wing_of_nostalgia/core/di/service_locator.dart';
 import 'package:drift/drift.dart' as drift;
 
 void main() {
   late DBService dbService;
   late AppDatabase db;
+  late Directory tempDir;
 
   setUp(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({});
+    tempDir = await Directory.systemTemp.createTemp('db-service-media-');
+
     // Setup in-memory drift database for testing
     db = AppDatabase.forTesting(NativeDatabase.memory());
 
     // Setup service locator for testing
     await sl.initialize(testDb: db);
 
-    dbService = DBService();
+    dbService = DBService(
+      mediaCleanup: SecureMediaCleanupService(
+        applicationDirectoryProvider: () async => tempDir,
+      ),
+    );
     await AuthService.instance.logout();
   });
 
@@ -28,6 +38,9 @@ void main() {
     await AuthService.instance.logout();
     await db.close();
     await sl.reset();
+    if (tempDir.existsSync()) {
+      tempDir.deleteSync(recursive: true);
+    }
   });
 
   group('DBService - Authentication Contract', () {
@@ -74,10 +87,17 @@ void main() {
           equals('Encrypted Title'));
     });
 
-    test('Should delete a memory', () async {
+    test('Should delete a memory and its linked encrypted media file',
+        () async {
+      final secureMediaDir = Directory('${tempDir.path}/secure_media');
+      await secureMediaDir.create();
+      final mediaFile = File('${secureMediaDir.path}/linked-memory.enc');
+      await mediaFile.writeAsString('ciphertext');
+
       final memory = MemoriesCompanion.insert(
         title: 'To Delete',
         encryptedContent: 'Content',
+        mediaPath: drift.Value(mediaFile.path),
         createdAt: drift.Value(DateTime.now()),
       );
 
@@ -86,6 +106,33 @@ void main() {
 
       final memories = await dbService.getMemories();
       expect(memories.any((m) => m.id == id), isFalse);
+      expect(await mediaFile.exists(), isFalse);
+    });
+
+    test('Should remove orphaned encrypted media without removing references',
+        () async {
+      final secureMediaDir = Directory('${tempDir.path}/secure_media');
+      await secureMediaDir.create();
+      final referencedFile = File('${secureMediaDir.path}/referenced.enc');
+      final orphanedFile = File('${secureMediaDir.path}/orphaned.enc');
+      final unrelatedFile = File('${secureMediaDir.path}/keep.txt');
+      await referencedFile.writeAsString('referenced');
+      await orphanedFile.writeAsString('orphaned');
+      await unrelatedFile.writeAsString('unrelated');
+
+      await dbService.insertMemory(
+        MemoriesCompanion.insert(
+          title: 'Referenced memory',
+          encryptedContent: 'Content',
+          mediaPath: drift.Value(referencedFile.path),
+          createdAt: drift.Value(DateTime.now()),
+        ),
+      );
+
+      expect(await dbService.cleanupOrphanedMedia(), 1);
+      expect(await referencedFile.exists(), isTrue);
+      expect(await orphanedFile.exists(), isFalse);
+      expect(await unrelatedFile.exists(), isTrue);
     });
   });
 }

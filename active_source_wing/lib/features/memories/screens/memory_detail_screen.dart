@@ -80,13 +80,6 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
   Future<void> _deleteMemory() async {
     final dbService = Provider.of<DBService>(context, listen: false);
     await dbService.deleteMemory(_currentMemory.id);
-    if (_currentMemory.mediaPath != null) {
-      final file = File(_currentMemory.mediaPath!);
-      // ignore: avoid_slow_async_io
-      if (await file.exists()) {
-        await file.delete();
-      }
-    }
     widget.onClose();
   }
 

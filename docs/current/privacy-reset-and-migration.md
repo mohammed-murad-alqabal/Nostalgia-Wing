@@ -3,10 +3,10 @@
 > **Status:** Partial
 > **Owner:** فريق تطوير مشروع جناح الحنين
 > **Authority:** عقد الخصوصية المحلي، `PrivacyMaintenanceService`، و`AppDatabase` عند schema version 3
-> **Last verified:** 2026-08-17
-> **Verified commit:** baseline `36db2e4`; implementation is under review on the PR branch
-> **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/data/app_database.dart`
-> **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`
+> **Last verified:** 2026-08-18
+> **Verified commit:** PR #18 branch under review
+> **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/services/secure_media_cleanup_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/core/data/app_database.dart`
+> **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/services/secure_media_cleanup_service_test.dart`, `active_source_wing/test/core/services/db_service_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`
 
 ## Purpose
 
@@ -19,6 +19,12 @@ The reset audit is lifecycle metadata, not a content log. It may record `running
 The audit is stored independently from `SharedPreferences` because the reset contract clears all preferences. The independent storage is intentional: retaining the latest non-sensitive result allows a later diagnostic or UI flow to distinguish a completed reset from a reset that stopped during cleanup. The stored audit record is not user content and is not a substitute for a server-side audit trail.
 
 The cleanup remains best-effort. Each independent boundary is attempted even after another boundary fails. The first cleanup error is rethrown after the terminal audit status is written. If audit persistence itself fails, that failure is logged and must not replace the original cleanup result.
+
+## Secure media lifecycle
+
+Each memory may reference one encrypted media path in `Memories.mediaPath`. `DBService.deleteMemory` reads the row before deletion, deletes the database row first, and then asks `SecureMediaCleanupService` to remove the linked file. The database deletion is authoritative; a file path is eligible for deletion only when it is a direct `.enc` file inside the application-owned `secure_media` directory. Paths outside that directory, missing files, non-encrypted files, and nested directories are ignored.
+
+`DBService.cleanupOrphanedMedia` is an explicit authenticated maintenance operation. It compares direct encrypted files in `secure_media` with the paths referenced by the remaining memory rows and removes only unreferenced `.enc` files. It does not recreate a missing directory, delete unrelated files, or introduce automatic expiry. The complete privacy reset continues to remove the whole application-owned `secure_media` directory as an independent cleanup boundary.
 
 ## Retention policy boundary
 
