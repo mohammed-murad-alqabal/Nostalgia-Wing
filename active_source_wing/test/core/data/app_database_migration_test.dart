@@ -23,7 +23,7 @@ void main() {
         expect(memory.title, 'ذكرى fixture v2');
         expect(memory.description, 'بيانات ترقية اختبارية');
         expect(memory.encryptedContent, 'ciphertext-v2-memory-7');
-        expect(memory.createdAt, DateTime.utc(2024));
+        expect(memory.createdAt.toUtc(), DateTime.utc(2024));
         expect(memory.mediaPath, isNull);
         expect(memory.emotionalScore, 87);
         expect(memory.viewCount, 3);
@@ -34,7 +34,7 @@ void main() {
         expect(reflection.ayahReference, '2:286');
         expect(reflection.hadithReference, 'fixture-hadith-v2');
         expect(reflection.aiInsight, 'insight-v2-preserved');
-        expect(reflection.reflectedAt, DateTime.utc(2024, 1, 2));
+        expect(reflection.reflectedAt.toUtc(), DateTime.utc(2024, 1, 2));
 
         final sentMessages = await database
             .customSelect(
