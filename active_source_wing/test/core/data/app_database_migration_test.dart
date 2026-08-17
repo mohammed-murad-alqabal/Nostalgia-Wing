@@ -15,15 +15,15 @@ void main() {
 
       final database = AppDatabase.forTesting(NativeDatabase(databaseFile));
       try {
-        final memory = await (database.select(database.memories).getSingle());
+        final memory = await database.select(database.memories).getSingle();
         final reflection =
-            await (database.select(database.reflections).getSingle());
+            await database.select(database.reflections).getSingle();
 
         expect(memory.id, 7);
         expect(memory.title, 'ذكرى fixture v2');
         expect(memory.description, 'بيانات ترقية اختبارية');
         expect(memory.encryptedContent, 'ciphertext-v2-memory-7');
-        expect(memory.createdAt, DateTime.utc(2024, 1, 1));
+        expect(memory.createdAt, DateTime.utc(2024));
         expect(memory.mediaPath, isNull);
         expect(memory.emotionalScore, 87);
         expect(memory.viewCount, 3);
@@ -38,14 +38,14 @@ void main() {
 
         final sentMessages = await database
             .customSelect(
-              "SELECT name FROM sqlite_master "
-              "WHERE type = 'table' AND name = 'sent_messages'",
+              'SELECT name FROM sqlite_master '
+              'WHERE type = \'table\' AND name = \'sent_messages\'',
             )
             .get();
         final surprises = await database
             .customSelect(
-              "SELECT name FROM sqlite_master "
-              "WHERE type = 'table' AND name = 'surprises'",
+              'SELECT name FROM sqlite_master '
+              'WHERE type = \'table\' AND name = \'surprises\'',
             )
             .get();
 
