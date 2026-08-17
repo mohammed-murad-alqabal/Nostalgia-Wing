@@ -3,10 +3,10 @@
 > **Status:** Partial
 > **Owner:** فريق تطوير مشروع جناح الحنين
 > **Authority:** عقد الخصوصية المحلي، `PrivacyMaintenanceService`، و`AppDatabase` عند schema version 3
-> **Last verified:** 2026-08-17
-> **Verified commit:** baseline `36db2e4`; implementation is under review on the PR branch
+> **Last verified:** 2026-08-18
+> **Verified commit:** `f5dd5c9`; platform evidence is pending PR #15 CI
 > **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/data/app_database.dart`
-> **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`
+> **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`, `active_source_wing/integration_test/privacy_reset_restart_test.dart`
 
 ## Purpose
 
@@ -34,9 +34,15 @@ The migration test must verify that the existing memory and reflection values su
 
 The fixture contains synthetic values only. It is not a backup and must never contain a real user key, real memory content, or production media.
 
+## Platform integration evidence
+
+PR #15 adds an Android integration test that launches the real application, writes synthetic records to Drift, Hive, and `secure_media`, executes privacy maintenance through the production UI, verifies the successful audit outcome and deletion boundaries, and invokes the real entrypoint again to model a fresh initialization. The restarted application must render the normal app root rather than `EmergencyApp`, retain the non-sensitive audit result, and expose empty local data stores.
+
+The test is deliberately platform-scoped because it exercises `path_provider`, Hive, Flutter Secure Storage, the application entrypoint, and an Android emulator. It is not included in the local unit-test command and must run in the dedicated `platform-integration` GitHub Actions job. Test data is synthetic and must never include a real key, memory, media file, or production account.
+
 ## Verification boundary
 
-Dart formatting and `git diff --check` may run locally. Flutter analysis, tests, and build verification are authoritative only through GitHub Actions for this repository because Flutter is not installed in the current sandbox. A PR may be merged only after the documentation governance, Flutter quality gate, and repository hygiene checks pass and the project owner confirms the merge.
+Dart formatting, `git diff --check`, and static source review may run locally. Flutter analysis, unit/widget tests, build verification, and the Android platform integration test are authoritative only through GitHub Actions for this repository because Flutter is not installed in the current sandbox. A PR may be merged only after the documentation governance, Flutter quality gate, Android platform integration, and repository hygiene checks pass and the project owner confirms the merge.
 
 ## References
 
