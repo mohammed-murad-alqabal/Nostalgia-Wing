@@ -92,7 +92,7 @@ void main() {
       final secureMediaDir = Directory('${tempDir.path}/secure_media');
       await secureMediaDir.create();
       final mediaFile = File('${secureMediaDir.path}/linked-memory.enc');
-      await mediaFile.writeAsString('ciphertext');
+      mediaFile.writeAsStringSync('ciphertext');
 
       final memory = MemoriesCompanion.insert(
         title: 'To Delete',
@@ -106,7 +106,7 @@ void main() {
 
       final memories = await dbService.getMemories();
       expect(memories.any((m) => m.id == id), isFalse);
-      expect(await mediaFile.exists(), isFalse);
+      expect(mediaFile.existsSync(), isFalse);
     });
 
     test('Should remove orphaned encrypted media without removing references',
@@ -116,9 +116,9 @@ void main() {
       final referencedFile = File('${secureMediaDir.path}/referenced.enc');
       final orphanedFile = File('${secureMediaDir.path}/orphaned.enc');
       final unrelatedFile = File('${secureMediaDir.path}/keep.txt');
-      await referencedFile.writeAsString('referenced');
-      await orphanedFile.writeAsString('orphaned');
-      await unrelatedFile.writeAsString('unrelated');
+      referencedFile.writeAsStringSync('referenced');
+      orphanedFile.writeAsStringSync('orphaned');
+      unrelatedFile.writeAsStringSync('unrelated');
 
       await dbService.insertMemory(
         MemoriesCompanion.insert(
@@ -130,9 +130,9 @@ void main() {
       );
 
       expect(await dbService.cleanupOrphanedMedia(), 1);
-      expect(await referencedFile.exists(), isTrue);
-      expect(await orphanedFile.exists(), isFalse);
-      expect(await unrelatedFile.exists(), isTrue);
+      expect(referencedFile.existsSync(), isTrue);
+      expect(orphanedFile.existsSync(), isFalse);
+      expect(unrelatedFile.existsSync(), isTrue);
     });
   });
 }

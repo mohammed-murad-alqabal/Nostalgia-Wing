@@ -26,15 +26,15 @@ void main() {
   test('deletes only an owned encrypted media path', () async {
     final ownedFile = File('${secureMediaDirectory.path}/owned.enc');
     final outsideFile = File('${appDirectory.parent.path}/outside.enc');
-    await ownedFile.writeAsString('owned');
-    await outsideFile.writeAsString('outside');
+    ownedFile.writeAsStringSync('owned');
+    outsideFile.writeAsStringSync('outside');
 
     expect(await service.deleteMediaPath(ownedFile.path), isTrue);
-    expect(await ownedFile.exists(), isFalse);
+    expect(ownedFile.existsSync(), isFalse);
 
     expect(await service.deleteMediaPath(outsideFile.path), isFalse);
-    expect(await outsideFile.exists(), isTrue);
-    await outsideFile.delete();
+    expect(outsideFile.existsSync(), isTrue);
+    outsideFile.deleteSync();
   });
 
   test('deletes only unreferenced direct encrypted files', () async {
@@ -42,20 +42,20 @@ void main() {
     final orphanedFile = File('${secureMediaDirectory.path}/orphaned.enc');
     final unrelatedFile = File('${secureMediaDirectory.path}/keep.txt');
     final nestedDirectory = Directory('${secureMediaDirectory.path}/nested');
-    await referencedFile.writeAsString('referenced');
-    await orphanedFile.writeAsString('orphaned');
-    await unrelatedFile.writeAsString('unrelated');
+    referencedFile.writeAsStringSync('referenced');
+    orphanedFile.writeAsStringSync('orphaned');
+    unrelatedFile.writeAsStringSync('unrelated');
     await nestedDirectory.create();
-    await File('${nestedDirectory.path}/nested.enc').writeAsString('nested');
+    File('${nestedDirectory.path}/nested.enc').writeAsStringSync('nested');
 
     expect(
       await service.deleteOrphanedFiles([referencedFile.path]),
       1,
     );
-    expect(await referencedFile.exists(), isTrue);
-    expect(await orphanedFile.exists(), isFalse);
-    expect(await unrelatedFile.exists(), isTrue);
-    expect(await File('${nestedDirectory.path}/nested.enc').exists(), isTrue);
+    expect(referencedFile.existsSync(), isTrue);
+    expect(orphanedFile.existsSync(), isFalse);
+    expect(unrelatedFile.existsSync(), isTrue);
+    expect(File('${nestedDirectory.path}/nested.enc').existsSync(), isTrue);
   });
 
   test('does not recreate a missing secure media directory', () async {
