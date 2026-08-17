@@ -4,11 +4,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../cognitive/psychological_context_manager.dart';
 import '../di/service_locator.dart';
 import '../infrastructure/wing_logger.dart';
 import '../services/auth_service.dart';
 import '../services/safety_box_service.dart';
-import '../cognitive/psychological_context_manager.dart';
 
 /// خدمة صيانة الخصوصية المعرفية
 /// Privacy Security Protocols
@@ -23,40 +24,89 @@ class PrivacyMaintenanceService {
       tag: 'SecurityProtocol',
     );
 
-    try {
-      // 1. مسح ملفات الوسائط المشفرة، بما في ذلك الملفات اليتيمة.
-      await _clearEncryptedMedia();
+    Object? firstError;
+    StackTrace? firstStackTrace;
 
-      // 2. مسح البيانات العلائقية قبل حذف المفتاح الذي يحميها.
-      await sl.database.clearAllSensitiveData();
+    Future<void> attempt(String step, Future<void> Function() action) async {
+      try {
+        await action();
+      } catch (error, stackTrace) {
+        firstError ??= error;
+        firstStackTrace ??= stackTrace;
+        WingLogger.error(
+          'Privacy maintenance step failed: $step',
+          tag: 'SecurityProtocol',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
+    }
 
-      // 3. مسح صناديق Hive.
-      await Hive.deleteBoxFromDisk(PsychologicalContextManager.boxName);
-      await Hive.deleteBoxFromDisk(SafetyBoxService.boxName);
+    final keyManager = sl.isInitialized ? sl.keyManager : null;
 
-      // 4. مسح الإعدادات المحلية.
+    // Continue through every cleanup boundary. Deletion is irreversible, so a
+    // later failure must not prevent earlier-independent stores from being
+    // cleaned up.
+    await attempt('encrypted media', _clearEncryptedMedia);
+
+    await attempt('relational database', () async {
+      if (sl.isInitialized) {
+        await sl.database.clearAllSensitiveData();
+      }
+    });
+
+    await attempt(
+      'psychological context Hive box',
+      () => _deleteHiveBox(PsychologicalContextManager.boxName),
+    );
+    await attempt(
+      'safety box Hive box',
+      () => _deleteHiveBox(SafetyBoxService.boxName),
+    );
+
+    await attempt('local preferences', () async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
+    });
 
-      // 5. إعادة تعيين الجلسة ثم إبطال المفتاح الرئيسي.
+    await attempt('authentication session', () async {
       await AuthService.instance.logout();
       AuthService.instance.dispose();
-      await sl.keyManager.clearMasterKey();
+    });
 
+    await attempt('master key invalidation', () async {
+      await keyManager?.clearMasterKey();
+    });
+
+    // Always close Drift, even when key invalidation or an earlier cleanup step
+    // failed. The app must not remain initialized with an invalid encryption
+    // key or a partially reset data graph.
+    await attempt('service locator shutdown', sl.reset);
+
+    if (firstError != null) {
       WingLogger.critical(
-        'PRIVACY MAINTENANCE COMPLETED: Project is now in a state of purity '
-        '(Professional Clarity).',
+        'PRIVACY MAINTENANCE FAILED: Cleanup completed with errors.',
         tag: 'SecurityProtocol',
+        error: firstError,
+        stackTrace: firstStackTrace,
       );
-    } catch (e, stackTrace) {
-      WingLogger.error(
-        'Critical failure during Privacy Maintenance',
-        tag: 'SecurityProtocol',
-        error: e,
-        stackTrace: stackTrace,
+      Error.throwWithStackTrace(
+        firstError!,
+        firstStackTrace ?? StackTrace.current,
       );
-      rethrow;
     }
+
+    WingLogger.critical(
+      'PRIVACY MAINTENANCE COMPLETED: Project is now in a state of purity '
+      '(Professional Clarity).',
+      tag: 'SecurityProtocol',
+    );
+  }
+
+  /// Removes the Hive box file and closes the box as part of the operation.
+  /// Hive 2.2.3 documents that deleteBoxFromDisk performs both actions.
+  static Future<void> _deleteHiveBox(String boxName) async {
+    await Hive.deleteBoxFromDisk(boxName);
   }
 
   /// Removes the application-owned directory containing encrypted memory media.

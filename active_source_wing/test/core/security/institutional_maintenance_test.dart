@@ -21,11 +21,13 @@ void main() {
   final binaryMessenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   late Directory tempDir;
+  late File databaseFile;
   late AppDatabase database;
   late _TrackingKeyManager keyManager;
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('privacy-maintenance-');
+    databaseFile = File('${tempDir.path}/privacy.sqlite');
     Hive.init(tempDir.path);
     SharedPreferences.setMockInitialValues({'test_key': 'test_value'});
 
@@ -36,7 +38,7 @@ void main() {
       return null;
     });
 
-    database = AppDatabase.forTesting(NativeDatabase.memory());
+    database = AppDatabase.forTesting(NativeDatabase(databaseFile));
     await sl.initialize(testDb: database);
     keyManager = _TrackingKeyManager();
     sl.keyManager = keyManager;
@@ -51,7 +53,9 @@ void main() {
   tearDown(() async {
     await sl.reset();
     await Hive.close();
-    tempDir.deleteSync(recursive: true);
+    if (tempDir.existsSync()) {
+      tempDir.deleteSync(recursive: true);
+    }
     binaryMessenger.setMockMethodCallHandler(pathProviderChannel, null);
   });
 
@@ -91,10 +95,7 @@ void main() {
 
       await PrivacyMaintenanceService.maintenanceReset();
 
-      expect(await database.select(database.memories).get(), isEmpty);
-      expect(await database.select(database.reflections).get(), isEmpty);
-      expect(await database.select(database.sentMessages).get(), isEmpty);
-      expect(await database.select(database.surprises).get(), isEmpty);
+      expect(sl.isInitialized, isFalse);
       expect(secureMediaDir.existsSync(), isFalse);
       expect(
         (await SharedPreferences.getInstance()).getString('test_key'),
@@ -104,6 +105,29 @@ void main() {
       expect(Hive.isBoxOpen(PsychologicalContextManager.boxName), isFalse);
       expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
       expect(keyManager.wasCleared, isTrue);
+
+      final reopenedDatabase =
+          AppDatabase.forTesting(NativeDatabase(databaseFile));
+      try {
+        expect(
+          await reopenedDatabase.select(reopenedDatabase.memories).get(),
+          isEmpty,
+        );
+        expect(
+          await reopenedDatabase.select(reopenedDatabase.reflections).get(),
+          isEmpty,
+        );
+        expect(
+          await reopenedDatabase.select(reopenedDatabase.sentMessages).get(),
+          isEmpty,
+        );
+        expect(
+          await reopenedDatabase.select(reopenedDatabase.surprises).get(),
+          isEmpty,
+        );
+      } finally {
+        await reopenedDatabase.close();
+      }
     },
   );
 
@@ -115,12 +139,16 @@ void main() {
       throwsA(isA<StateError>()),
     );
 
-    // يفشل المسار بصورة ظاهرة للمستدعي ولا يدّعي نجاح التصفير.
+    // يفشل المسار بصورة ظاهرة للمستدعي ولا يدّعي نجاح التصفير، مع إغلاق
+    // الموارد حتى لا يبقى التطبيق مهيأً بمفتاح غير صالح.
+    expect(sl.isInitialized, isFalse);
     expect(
       (await SharedPreferences.getInstance()).getString('test_key'),
       isNull,
     );
     expect(AuthService.instance.isAuthenticated, isFalse);
+    expect(Hive.isBoxOpen(PsychologicalContextManager.boxName), isFalse);
+    expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
   });
 }
 
