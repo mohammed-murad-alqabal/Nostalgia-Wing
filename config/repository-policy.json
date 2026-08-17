@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "branch": {
+    "primary": "main",
+    "retired": ["develop"]
+  },
+  "forbidden_tracked_paths": [
+    "**/.env",
+    "**/.env.*",
+    "**/coverage/**",
+    "**/build/**",
+    "**/.dart_tool/**",
+    "**/node_modules/**",
+    "**/.DS_Store",
+    "**/*.log"
+  ],
+  "known_tracked_violations": [],
+  "allowed_zero_byte_paths": [
+    "**/.gitkeep",
+    "**/placeholder.txt"
+  ],
+  "workflow_root": ".github/workflows",
+  "warn_on_nested_workflows": true,
+  "warn_on_retired_branch_references": true
+}

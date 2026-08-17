@@ -5,8 +5,9 @@ publish_to: "none"
 version: 2.2.0+1
 
 environment:
+  # لغة المصدر تبقى عند 3.6؛ حد Flutter أدناه يحدد بيئة التبعيات الفعلية.
   sdk: ">=3.6.0 <4.0.0"
-  flutter: ">=3.22.2"
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:
@@ -80,10 +81,3 @@ flutter_launcher_icons:
   ios: false
   image_path: "assets/images/app_logo_nostalgia.png"
   min_sdk_android: 21
-
-  # fonts:
-  #   - family: Amiri
-  #     fonts:
-  #       - asset: assets/fonts/Amiri-Regular.ttf
-  #       - asset: assets/fonts/Amiri-Bold.ttf
-  #         weight: 700

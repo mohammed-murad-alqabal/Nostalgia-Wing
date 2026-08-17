@@ -1,25 +1,35 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:wing_of_nostalgia/features/home/screens/enhanced_home_screen.dart';
-import 'package:wing_of_nostalgia/core/performance/performance_monitor.dart';
+import 'package:wing_of_nostalgia/core/data/app_database.dart';
+import 'package:wing_of_nostalgia/core/di/service_locator.dart';
 import 'package:wing_of_nostalgia/core/memory/memory_manager.dart';
+import 'package:wing_of_nostalgia/core/performance/performance_monitor.dart';
+import 'package:wing_of_nostalgia/features/home/screens/enhanced_home_screen.dart';
 
 /// اختبارات أداء الشاشة الرئيسية المحسنة
 /// Performance tests for Enhanced Home Screen
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Enhanced Home Screen Performance Tests', () {
     late PerformanceMonitor performanceMonitor;
     late MemoryManager memoryManager;
 
-    setUp(() {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      await sl.initialize(
+          testDb: AppDatabase.forTesting(NativeDatabase.memory()));
       performanceMonitor = PerformanceMonitor();
       memoryManager = MemoryManager();
     });
 
-    tearDown(() {
+    tearDown(() async {
       performanceMonitor.stopMonitoring();
       memoryManager.dispose();
+      await sl.reset();
     });
 
     testWidgets('should initialize without performance issues', (tester) async {
@@ -46,6 +56,8 @@ void main() {
       // التحقق من الأداء
       final report = performanceMonitor.getPerformanceReport();
       expect(report.isPerformanceGood, isTrue);
+
+      await tester.pumpWidget(const SizedBox.shrink());
     });
 
     testWidgets('should handle performance level changes', (tester) async {
@@ -66,6 +78,7 @@ void main() {
       // التحقق من وجود مؤشر الأداء في وضع التطوير
       // (سيكون مرئياً فقط في وضع التطوير)
       await tester.pump();
+      await tester.pumpWidget(const SizedBox.shrink());
     });
 
     testWidgets('should handle memory management correctly', (tester) async {
@@ -88,6 +101,8 @@ void main() {
       // التحقق من إحصائيات الذاكرة
       final memoryStats = memoryManager.getMemoryStats();
       expect(memoryStats.totalResources, greaterThanOrEqualTo(0));
+
+      await tester.pumpWidget(const SizedBox.shrink());
     });
 
     testWidgets(
@@ -120,6 +135,8 @@ void main() {
       // التحقق من الأداء بعد التفاعل
       final report = performanceMonitor.getPerformanceReport();
       expect(report.averageResponseTime, lessThan(1000)); // أقل من ثانية واحدة
+
+      await tester.pumpWidget(const SizedBox.shrink());
     });
 
     testWidgets('should adapt UI based on performance level', (tester) async {
@@ -138,6 +155,8 @@ void main() {
 
       // التحقق من أن الشاشة تعرض المحتوى بشكل صحيح
       expect(find.byType(SingleChildScrollView), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
     });
 
     test('performance monitor should track metrics correctly', () {

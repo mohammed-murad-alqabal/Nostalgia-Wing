@@ -2,9 +2,9 @@ name: Flutter CI
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches: [main]
   push:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -15,12 +15,20 @@ permissions:
   contents: read
 
 jobs:
+  documentation-governance:
+    name: Documentation governance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v5
+      - name: Verify documentation governance
+        run: python3 scripts/verify_documentation_governance.py
+
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./active_source_wing
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v5

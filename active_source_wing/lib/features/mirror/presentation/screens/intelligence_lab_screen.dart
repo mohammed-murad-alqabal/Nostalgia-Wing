@@ -293,11 +293,9 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
 
   Widget _buildReportTile(String arName, String enName, IconData icon,
           Color color, VoidCallback onTap) =>
-      Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(15),
-        ),
+      Material(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(15),
         child: ListTile(
           onTap: onTap,
           leading: Container(

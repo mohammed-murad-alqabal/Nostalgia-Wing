@@ -11,7 +11,7 @@ import '../infrastructure/wing_logger.dart';
 /// مدير بيانات قديم متوافق مع تنسيقات تاريخية فقط.
 ///
 /// لا تستخدم هذه الواجهة لتشفير بيانات جديدة؛ تعتمد تنفيذ XOR قديم، بينما
-/// المسار المعتمد للتشفير الجديد هو [SecurityService] المبني على AES-256-GCM.
+/// المسار المعتمد للتشفير الجديد هو `SecurityService` المبني على AES-256-GCM.
 @Deprecated('Use SecurityService (AES-256-GCM) for all new sensitive data.')
 class SecureDataManager {
   static const String _saltKey = 'WingOfNostalgia2025';

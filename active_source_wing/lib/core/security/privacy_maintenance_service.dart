@@ -67,8 +67,8 @@ class PrivacyMaintenanceService {
     final appDir = await getApplicationDocumentsDirectory();
     final secureMediaDir = Directory(p.join(appDir.path, 'secure_media'));
 
-    if (await secureMediaDir.exists()) {
-      await secureMediaDir.delete(recursive: true);
+    if (secureMediaDir.existsSync()) {
+      secureMediaDir.deleteSync(recursive: true);
     }
   }
 }
