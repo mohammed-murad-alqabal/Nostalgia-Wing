@@ -4,13 +4,13 @@
 > **Owner:** فريق تطوير مشروع جناح الحنين
 > **Authority:** عقد الخصوصية المحلي، `PrivacyMaintenanceService`، و`AppDatabase` عند schema version 3
 > **Last verified:** 2026-08-18
-> **Verified commit:** PR #18 branch under review
-> **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/services/secure_media_cleanup_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/core/data/app_database.dart`
-> **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/services/secure_media_cleanup_service_test.dart`, `active_source_wing/test/core/services/db_service_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`
+> **Verified commit:** PR #19 branch under review
+> **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/security/security_service.dart`, `active_source_wing/lib/core/security/key_manager.dart`, `active_source_wing/lib/core/security/versioned_encryption_service.dart`, `active_source_wing/lib/core/services/secure_media_cleanup_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/core/data/app_database.dart`
+> **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/security/security_service_test.dart`, `active_source_wing/test/core/security/versioned_encryption_service_test.dart`, `active_source_wing/test/core/services/secure_media_cleanup_service_test.dart`, `active_source_wing/test/core/services/db_service_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`
 
 ## Purpose
 
-This document defines the evidence contract for two local-data safeguards: the persisted, non-sensitive outcome of the latest privacy reset and the migration test from Drift schema version 2 to version 3. It does not introduce automatic expiry for memories, key rotation, or a new production use for `SafetyBoxService`.
+This document defines the evidence contract for local privacy safeguards, including the persisted, non-sensitive outcome of the latest privacy reset, the migration test from Drift schema version 2 to version 3, and the SEC-03 encryption envelope contract. It does not introduce automatic expiry for memories, automatic re-encryption, or a new production use for `SafetyBoxService`.
 
 ## Privacy reset audit
 
@@ -25,6 +25,16 @@ The cleanup remains best-effort. Each independent boundary is attempted even aft
 Each memory may reference one encrypted media path in `Memories.mediaPath`. `DBService.deleteMemory` reads the row before deletion, deletes the database row first, and then asks `SecureMediaCleanupService` to remove the linked file. The database deletion is authoritative; a file path is eligible for deletion only when it is a direct `.enc` file inside the application-owned `secure_media` directory. Paths outside that directory, missing files, non-encrypted files, and nested directories are ignored.
 
 `DBService.cleanupOrphanedMedia` is an explicit authenticated maintenance operation. It compares direct encrypted files in `secure_media` with the paths referenced by the remaining memory rows and removes only unreferenced `.enc` files. It does not recreate a missing directory, delete unrelated files, or introduce automatic expiry. The complete privacy reset continues to remove the whole application-owned `secure_media` directory as an independent cleanup boundary.
+
+## SEC-03 versioned encryption and key rotation
+
+New AES-GCM payloads use a versioned authenticated envelope containing a fixed format marker, envelope version, UTF-8 key identifier, nonce, ciphertext, and authentication tag. The envelope header is authenticated as additional data, so changing the version or key identifier invalidates the payload. Production writes and reads go through `VersionedEncryptionService`, which selects the active key for new data and resolves the retained key named by each payload for reads.
+
+Historical AES-GCM payloads in the previous `nonce + ciphertext + MAC` format remain readable as a compatibility boundary. They have no key identifier and therefore resolve to the retained `legacy` key. The compatibility reader does not claim that historical data has been re-enveloped.
+
+`KeyManager.rotateMasterKey` creates and activates a new versioned key while retaining the previous key. It does not rewrite records, delete the previous key, or perform a background migration. `VersionedEncryptionService.rewrap` and `rewrapBytes` are explicit operations that decrypt, then encrypt under the active key; a future batch migration must verify each result before replacing the source payload. Scheduled rotation, automatic re-encryption, remote key management, and recovery from lost device keys remain outside this PR and must be separately reviewed.
+
+The privacy reset clears the active-key pointer, the historical master key, and all retained versioned keys. After a reset, the next first-use initialization creates a new key; this is expected and does not restore previously deleted data.
 
 ## Retention policy boundary
 

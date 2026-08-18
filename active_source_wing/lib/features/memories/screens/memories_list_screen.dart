@@ -31,12 +31,10 @@ class _MemoriesListScreenState extends State<MemoriesListScreen> {
     final memories = await dbService.getMemories();
 
     try {
-      final key = await sl.keyManager.getMasterKey();
-
-      // Decrypt all titles for the list view
+      // Decrypt all titles using the key ID recorded in each envelope.
       final decryptedMemories = await Future.wait(memories.map((m) async {
         try {
-          final decryptedTitle = await sl.securityService.decrypt(m.title, key);
+          final decryptedTitle = await sl.encryptionService.decrypt(m.title);
           return m.copyWith(title: decryptedTitle);
         } catch (e) {
           return m.copyWith(title: 'خطأ في التشفير');

@@ -2,6 +2,7 @@ import '../analysis/spiritual_analyzer.dart';
 import '../data/app_database.dart';
 import '../security/key_manager.dart';
 import '../security/security_service.dart';
+import '../security/versioned_encryption_service.dart';
 import '../services/settings_service.dart';
 
 /// Singleton instance of [ServiceLocator].
@@ -14,6 +15,9 @@ class ServiceLocator {
 
   /// Key manager for master key storage.
   late KeyManager keyManager;
+
+  /// Versioned encryption facade for production reads and writes.
+  late VersionedEncryptionService encryptionService;
 
   /// Local database instance.
   AppDatabase? _database;
@@ -58,6 +62,10 @@ class ServiceLocator {
 
       securityService = SecurityService();
       keyManager = KeyManager();
+      encryptionService = VersionedEncryptionService(
+        securityService: securityService,
+        keyManager: keyManager,
+      );
       analyzer = SpiritualAnalyzer();
       settingsService = nextSettingsService;
       _database = database;
