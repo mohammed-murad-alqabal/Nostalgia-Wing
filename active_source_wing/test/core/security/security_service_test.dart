@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing_of_nostalgia/core/security/decryption_observer.dart';
 import 'package:wing_of_nostalgia/core/security/security_service.dart';
 
 void main() {
@@ -105,6 +106,64 @@ void main() {
 
     await expectLater(
       service.decrypt(base64.encode(bytes), key),
+      throwsA(isA<Object>()),
+    );
+  });
+
+  test('reports invalid Base64 without exposing payload data', () async {
+    final events = <DecryptionFailureEvent>[];
+    final observedService = SecurityService(
+      onDecryptionFailure: events.add,
+    );
+
+    await expectLater(
+      observedService.decrypt('not-valid-base64', key),
+      throwsA(isA<DecryptionFormatException>()),
+    );
+
+    expect(events, hasLength(1));
+    expect(events.single.kind, DecryptionFailureKind.invalidEncoding);
+    expect(events.single.operation, 'text');
+    expect(events.single.toSafeData().keys, isNot(contains('ciphertext')));
+    expect(events.single.toSafeData().keys, isNot(contains('plaintext')));
+  });
+
+  test('reports authenticated tampering with safe envelope metadata', () async {
+    final events = <DecryptionFailureEvent>[];
+    final observedService = SecurityService(
+      onDecryptionFailure: events.add,
+    );
+    final cipherText = await observedService.encrypt(
+      'لا تقبل العبث',
+      key,
+      keyId: 'v1',
+    );
+    final bytes = base64.decode(cipherText);
+    bytes[bytes.length - 1] ^= 0x01;
+
+    await expectLater(
+      observedService.decrypt(base64.encode(bytes), key),
+      throwsA(isA<Object>()),
+    );
+
+    expect(events, hasLength(1));
+    expect(events.single.kind, DecryptionFailureKind.authenticationFailed);
+    expect(events.single.keyId, 'v1');
+    expect(
+        events.single.envelopeVersion, SecurityService.currentEnvelopeVersion);
+    expect(events.single.payloadLength, bytes.length);
+  });
+
+  test('observer failures never replace the decryption exception', () async {
+    final observedService = SecurityService(
+      onDecryptionFailure: (_) => throw StateError('observer failure'),
+    );
+    final cipherText = await observedService.encrypt('لا تقبل العبث', key);
+    final bytes = base64.decode(cipherText);
+    bytes[bytes.length - 1] ^= 0x01;
+
+    await expectLater(
+      observedService.decrypt(base64.encode(bytes), key),
       throwsA(isA<Object>()),
     );
   });

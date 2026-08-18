@@ -4,9 +4,11 @@
 > **Owner:** فريق تطوير مشروع جناح الحنين
 > **Authority:** عقد الخصوصية المحلي، `PrivacyMaintenanceService`، و`AppDatabase` عند schema version 3
 > **Last verified:** 2026-08-18
-> **Verified commit:** PR #19 branch under review
-> **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/security/security_service.dart`, `active_source_wing/lib/core/security/key_manager.dart`, `active_source_wing/lib/core/security/versioned_encryption_service.dart`, `active_source_wing/lib/core/services/secure_media_cleanup_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/core/data/app_database.dart`
-> **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/security/security_service_test.dart`, `active_source_wing/test/core/security/versioned_encryption_service_test.dart`, `active_source_wing/test/core/services/secure_media_cleanup_service_test.dart`, `active_source_wing/test/core/services/db_service_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`
+> **Verified commit:** PR #20 branch under review
+> **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/security/security_service.dart`, `active_source_wing/lib/core/security/key_manager.dart`, `active_source_wing/lib/core/security/versioned_encryption_service.dart`, `active_source_wing/lib/core/security/decryption_observer.dart`,
+> `active_source_wing/lib/core/services/secure_media_cleanup_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/core/data/app_database.dart`
+> **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/security/security_service_test.dart`, `active_source_wing/test/core/security/versioned_encryption_service_test.dart`,
+> `active_source_wing/test/core/services/secure_media_cleanup_service_test.dart`, `active_source_wing/test/core/services/db_service_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`
 
 ## Purpose
 
@@ -35,6 +37,12 @@ Historical AES-GCM payloads in the previous `nonce + ciphertext + MAC` format re
 `KeyManager.rotateMasterKey` creates and activates a new versioned key while retaining the previous key. It does not rewrite records, delete the previous key, or perform a background migration. `VersionedEncryptionService.rewrap` and `rewrapBytes` are explicit operations that decrypt, then encrypt under the active key; a future batch migration must verify each result before replacing the source payload. Scheduled rotation, automatic re-encryption, remote key management, and recovery from lost device keys remain outside this PR and must be separately reviewed.
 
 The privacy reset clears the active-key pointer, the historical master key, and all retained versioned keys. After a reset, the next first-use initialization creates a new key; this is expected and does not restore previously deleted data.
+
+### Decryption failure observability
+
+`SecurityService` and `VersionedEncryptionService` may emit a `DecryptionFailureEvent` through an injected observer when decoding, envelope parsing, key resolution, authentication, or UTF-8 conversion fails. The event is intentionally classified and privacy-safe: it may include only the operation, failure kind, sanitized generated key ID, envelope version, and payload length. It must never include plaintext, ciphertext, secret-key bytes, exception messages, or stack traces.
+
+The production observer currently forwards the safe fields to `WingLogger` at warning level. Observer failures are swallowed so diagnostics cannot replace or alter the original decryption exception. This is local observability only; remote telemetry, automatic retry, silent fallback, and automatic data repair remain `Proposed` and require separate review.
 
 ## Retention policy boundary
 

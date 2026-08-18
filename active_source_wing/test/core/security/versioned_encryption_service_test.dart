@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing_of_nostalgia/core/security/decryption_observer.dart';
 import 'package:wing_of_nostalgia/core/security/key_manager.dart';
 import 'package:wing_of_nostalgia/core/security/security_service.dart';
 import 'package:wing_of_nostalgia/core/security/versioned_encryption_service.dart';
@@ -49,6 +53,75 @@ void main() {
     );
     expect(await service.decrypt(rewrapped), 'إعادة تغليف آمنة');
     expect(await service.decrypt(original), 'إعادة تغليف آمنة');
+  });
+
+  test('reports a missing retained key without logging key material', () async {
+    final store = _MemoryKeyValueStore();
+    final events = <DecryptionFailureEvent>[];
+    final keyManager = KeyManager(store: store);
+    final service = VersionedEncryptionService(
+      securityService: SecurityService(),
+      keyManager: keyManager,
+      onDecryptionFailure: events.add,
+    );
+
+    final encrypted = await service.encrypt('مفتاح سيُفقد');
+    await keyManager.clearMasterKey();
+
+    await expectLater(
+      service.decrypt(encrypted),
+      throwsA(isA<StateError>()),
+    );
+
+    expect(events, hasLength(1));
+    expect(events.single.kind, DecryptionFailureKind.missingKey);
+    expect(events.single.keyId, KeyManager.legacyKeyId);
+    expect(events.single.toSafeData().keys, isNot(contains('key')));
+    expect(events.single.toSafeData().keys, isNot(contains('secret')));
+  });
+
+  test('reports malformed Base64 before key lookup', () async {
+    final store = _MemoryKeyValueStore();
+    final events = <DecryptionFailureEvent>[];
+    final service = VersionedEncryptionService(
+      securityService: SecurityService(),
+      keyManager: KeyManager(store: store),
+      onDecryptionFailure: events.add,
+    );
+
+    await expectLater(
+      service.decrypt('%%%'),
+      throwsA(isA<FormatException>()),
+    );
+
+    expect(events, hasLength(1));
+    expect(events.single.kind, DecryptionFailureKind.invalidEncoding);
+    expect(events.single.operation, 'text');
+  });
+
+  test('reports unsupported envelope versions through the facade', () async {
+    final store = _MemoryKeyValueStore();
+    final events = <DecryptionFailureEvent>[];
+    final securityService = SecurityService();
+    final service = VersionedEncryptionService(
+      securityService: securityService,
+      keyManager: KeyManager(store: store),
+      onDecryptionFailure: events.add,
+    );
+
+    final encrypted = await service.encrypt('إصدار غير مدعوم');
+    final bytes = base64.decode(encrypted);
+    bytes[4] = SecurityService.currentEnvelopeVersion + 1;
+
+    await expectLater(
+      service.decryptBytes(Uint8List.fromList(bytes)),
+      throwsA(isA<DecryptionFormatException>()),
+    );
+
+    expect(events, hasLength(1));
+    expect(events.single.kind, DecryptionFailureKind.unsupportedVersion);
+    expect(events.single.envelopeVersion,
+        SecurityService.currentEnvelopeVersion + 1);
   });
 
   test('clearMasterKey removes the active and retained key material', () async {
