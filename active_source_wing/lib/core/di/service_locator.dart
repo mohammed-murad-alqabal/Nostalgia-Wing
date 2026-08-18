@@ -62,13 +62,13 @@ class ServiceLocator {
     try {
       await nextSettingsService.init();
 
-      final decryptionObserver = (DecryptionFailureEvent event) {
+      void decryptionObserver(DecryptionFailureEvent event) {
         WingLogger.warning(
           'تعذر فك بيانات محلية حساسة',
           tag: 'Decryption',
           data: event.toSafeData(),
         );
-      };
+      }
 
       securityService = SecurityService(
         onDecryptionFailure: decryptionObserver,
