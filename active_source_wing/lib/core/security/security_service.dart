@@ -167,6 +167,25 @@ class SecurityService {
   /// Returns the envelope version, or `null` for historical data.
   int? versionFromBytes(Uint8List payload) => _parsePayload(payload).version;
 
+  /// Returns a best-effort envelope version before full payload validation.
+  ///
+  /// This is only diagnostic metadata for malformed or unsupported payloads;
+  /// it never authorizes decryption and never exposes payload contents.
+  int? versionHintFromBytes(Uint8List payload) => _envelopeVersionHint(payload);
+
+  /// Returns a best-effort envelope version from Base64 diagnostic input.
+  ///
+  /// Invalid Base64 has no version hint and returns `null`.
+  int? versionHintFromBase64(String cipherBase64) {
+    try {
+      return versionHintFromBytes(
+        Uint8List.fromList(base64.decode(cipherBase64)),
+      );
+    } on FormatException {
+      return null;
+    }
+  }
+
   _ParsedPayload _parsePayload(List<int> payload) {
     if (!_hasMagic(payload)) {
       _validateLegacyPayload(payload);

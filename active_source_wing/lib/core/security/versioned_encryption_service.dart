@@ -65,6 +65,7 @@ class VersionedEncryptionService {
       _notifyKeyResolutionFailure(
         operation: 'bytes',
         keyId: keyId,
+        envelopeVersion: securityService.versionHintFromBytes(bytes),
         payloadLength: bytes.length,
         error: error,
       );
@@ -93,6 +94,7 @@ class VersionedEncryptionService {
       _notifyKeyResolutionFailure(
         operation: 'text',
         keyId: keyId,
+        envelopeVersion: securityService.versionHintFromBase64(cipherBase64),
         payloadLength: cipherBase64.length,
         error: error,
       );
@@ -103,6 +105,7 @@ class VersionedEncryptionService {
   void _notifyKeyResolutionFailure({
     required String operation,
     required String? keyId,
+    required int? envelopeVersion,
     required int payloadLength,
     required Object error,
   }) {
@@ -119,6 +122,7 @@ class VersionedEncryptionService {
           kind: kind,
           operation: operation,
           keyId: safeDecryptionKeyId(keyId),
+          envelopeVersion: envelopeVersion,
           payloadLength: payloadLength,
         ),
       );

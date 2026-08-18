@@ -117,7 +117,7 @@ void main() {
     );
 
     await expectLater(
-      observedService.decrypt('not-valid-base64', key),
+      observedService.decrypt('%%%', key),
       throwsA(isA<DecryptionFormatException>()),
     );
 
