@@ -2,16 +2,21 @@ import 'package:drift/drift.dart';
 import '../data/app_database.dart';
 import '../di/service_locator.dart';
 import 'auth_service.dart';
+import 'secure_media_cleanup_service.dart';
 
 /// Service for handling authenticated local database operations using Drift.
 class DBService {
   /// Creates a database service bound to the current local auth session.
-  DBService({AuthService? authService})
-      : _authService = authService ?? AuthService.instance,
+  DBService({
+    AuthService? authService,
+    SecureMediaCleanupService? mediaCleanup,
+  })  : _authService = authService ?? AuthService.instance,
+        _mediaCleanup = mediaCleanup ?? SecureMediaCleanupService(),
         _db = sl.database;
 
   final AppDatabase _db;
   final AuthService _authService;
+  final SecureMediaCleanupService _mediaCleanup;
 
   /// Initializes the database service.
   Future<void> init() async {
@@ -42,10 +47,31 @@ class DBService {
     return _db.into(_db.memories).insert(memory);
   }
 
-  /// Deletes a memory by its ID.
+  /// Deletes a memory and its application-owned encrypted media file.
+  ///
+  /// Database deletion remains authoritative: the media file is removed only
+  /// after the row deletion succeeds. Files outside the owned `secure_media`
+  /// directory are intentionally ignored by [SecureMediaCleanupService].
   Future<void> deleteMemory(int id) async {
     _requireAuthenticated();
+    final memory = await (_db.select(_db.memories)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+
     await (_db.delete(_db.memories)..where((t) => t.id.equals(id))).go();
+    await _mediaCleanup.deleteMediaPath(memory?.mediaPath);
+  }
+
+  /// Deletes encrypted media files that are no longer referenced by memories.
+  ///
+  /// This is an explicit maintenance operation; it does not implement
+  /// automatic retention or expiry for memories.
+  Future<int> cleanupOrphanedMedia() async {
+    _requireAuthenticated();
+    final memories = await _db.select(_db.memories).get();
+    return _mediaCleanup.deleteOrphanedFiles(
+      memories.map((memory) => memory.mediaPath),
+    );
   }
 
   // SentMessage operations
