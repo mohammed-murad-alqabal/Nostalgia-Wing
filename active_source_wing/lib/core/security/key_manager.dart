@@ -75,16 +75,16 @@ class KeyRotationResult {
 /// only the active-key pointer. The previous key is retained so existing data
 /// remains readable until an explicit re-wrap operation succeeds.
 class KeyManager {
+  /// Creates a manager with production storage unless [store] is supplied.
+  KeyManager({KeyValueStore? store})
+      : _store = store ?? FlutterSecureKeyValueStore();
+
   /// Identifier used for payloads created before key rotation.
   static const String legacyKeyId = 'legacy';
 
   static const String _mskKey = 'wing_of_nostalgia_msk';
   static const String _activeKeyIdKey = 'wing_of_nostalgia_active_key_id';
   static const String _versionedKeyPrefix = 'wing_of_nostalgia_key_';
-
-  /// Creates a manager with production storage unless [store] is supplied.
-  KeyManager({KeyValueStore? store})
-      : _store = store ?? FlutterSecureKeyValueStore();
 
   final KeyValueStore _store;
 

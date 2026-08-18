@@ -60,14 +60,12 @@ class VersionedEncryptionService {
   Future<KeyRotationResult> rotateMasterKey() => keyManager.rotateMasterKey();
 
   /// Re-wraps one text payload under the current active key.
-  Future<String> rewrap(String cipherBase64) async {
-    return encrypt(await decrypt(cipherBase64));
-  }
+  Future<String> rewrap(String cipherBase64) async =>
+      encrypt(await decrypt(cipherBase64));
 
   /// Re-wraps one binary payload under the current active key.
-  Future<Uint8List> rewrapBytes(Uint8List bytes) async {
-    return encryptBytes(await decryptBytes(bytes));
-  }
+  Future<Uint8List> rewrapBytes(Uint8List bytes) async =>
+      encryptBytes(await decryptBytes(bytes));
 
   Future<SecretKey> _keyForText(String cipherBase64) async {
     final keyId = securityService.keyIdFromBase64(cipherBase64);
