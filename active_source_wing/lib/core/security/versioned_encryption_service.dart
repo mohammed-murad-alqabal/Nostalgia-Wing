@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
 
+import 'decryption_observer.dart';
 import 'key_manager.dart';
 import 'security_service.dart';
 
@@ -15,6 +16,7 @@ class VersionedEncryptionService {
   const VersionedEncryptionService({
     required this.securityService,
     required this.keyManager,
+    this.onDecryptionFailure,
   });
 
   /// Low-level AES-GCM envelope implementation.
@@ -22,6 +24,9 @@ class VersionedEncryptionService {
 
   /// Active and retained key management.
   final KeyManager keyManager;
+
+  /// Receives failures that occur before the low-level decrypt call.
+  final DecryptionFailureObserver? onDecryptionFailure;
 
   /// Encrypts text using the currently active key.
   Future<String> encrypt(String plainText) async {
@@ -51,8 +56,21 @@ class VersionedEncryptionService {
 
   /// Decrypts bytes using the key named by their envelope.
   Future<Uint8List> decryptBytes(Uint8List bytes) async {
-    final keyId = securityService.keyIdFromBytes(bytes);
-    final key = await keyManager.getKey(keyId ?? KeyManager.legacyKeyId);
+    String? keyId;
+    late final SecretKey key;
+    try {
+      keyId = securityService.keyIdFromBytes(bytes);
+      key = await keyManager.getKey(keyId ?? KeyManager.legacyKeyId);
+    } catch (error) {
+      _notifyKeyResolutionFailure(
+        operation: 'bytes',
+        keyId: keyId,
+        envelopeVersion: securityService.versionHintFromBytes(bytes),
+        payloadLength: bytes.length,
+        error: error,
+      );
+      rethrow;
+    }
     return securityService.decryptBytes(bytes, key);
   }
 
@@ -68,7 +86,48 @@ class VersionedEncryptionService {
       encryptBytes(await decryptBytes(bytes));
 
   Future<SecretKey> _keyForText(String cipherBase64) async {
-    final keyId = securityService.keyIdFromBase64(cipherBase64);
-    return keyManager.getKey(keyId ?? KeyManager.legacyKeyId);
+    String? keyId;
+    try {
+      keyId = securityService.keyIdFromBase64(cipherBase64);
+      return await keyManager.getKey(keyId ?? KeyManager.legacyKeyId);
+    } catch (error) {
+      _notifyKeyResolutionFailure(
+        operation: 'text',
+        keyId: keyId,
+        envelopeVersion: securityService.versionHintFromBase64(cipherBase64),
+        payloadLength: cipherBase64.length,
+        error: error,
+      );
+      rethrow;
+    }
+  }
+
+  void _notifyKeyResolutionFailure({
+    required String operation,
+    required String? keyId,
+    required int? envelopeVersion,
+    required int payloadLength,
+    required Object error,
+  }) {
+    final kind = error is StateError
+        ? DecryptionFailureKind.missingKey
+        : error is DecryptionFormatException
+            ? error.kind
+            : error is FormatException
+                ? DecryptionFailureKind.invalidEncoding
+                : DecryptionFailureKind.unknown;
+    try {
+      onDecryptionFailure?.call(
+        DecryptionFailureEvent(
+          kind: kind,
+          operation: operation,
+          keyId: safeDecryptionKeyId(keyId),
+          envelopeVersion: envelopeVersion,
+          payloadLength: payloadLength,
+        ),
+      );
+    } catch (_) {
+      // Observability must never change key resolution or decryption behavior.
+    }
   }
 }
