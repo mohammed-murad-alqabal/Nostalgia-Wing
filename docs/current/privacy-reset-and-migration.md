@@ -3,12 +3,13 @@
 > **Status:** Partial
 > **Owner:** فريق تطوير مشروع جناح الحنين
 > **Authority:** عقد الخصوصية المحلي، `PrivacyMaintenanceService`، و`AppDatabase` عند schema version 3
-> **Last verified:** 2026-08-18
-> **Verified commit:** PR #20 branch under review
+> **Last verified:** 2026-08-19
+> **Verified commit:** `chore/pre-release-stability-suite` branch under review
 > **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/security/security_service.dart`, `active_source_wing/lib/core/security/key_manager.dart`, `active_source_wing/lib/core/security/versioned_encryption_service.dart`, `active_source_wing/lib/core/security/decryption_observer.dart`,
 > `active_source_wing/lib/core/services/secure_media_cleanup_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/core/data/app_database.dart`
 > **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/security/security_service_test.dart`, `active_source_wing/test/core/security/versioned_encryption_service_test.dart`,
-> `active_source_wing/test/core/services/secure_media_cleanup_service_test.dart`, `active_source_wing/test/core/services/db_service_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`
+> `active_source_wing/test/core/services/secure_media_cleanup_service_test.dart`, `active_source_wing/test/core/services/db_service_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`,
+> `active_source_wing/test/core/lifecycle/service_lifecycle_test.dart`, `active_source_wing/test/core/smoke/privacy_reset_smoke_test.dart`
 
 ## Purpose
 
@@ -65,6 +66,14 @@ The migration fixture represents a populated version 2 database containing `memo
 The migration test must verify that the existing memory and reflection values survive unchanged, that the two version-3 tables exist, and that the new tables are empty when the v2 fixture contains no rows for them. The test must close and reopen the migrated database to ensure the result is durable and the migration is not repeated destructively.
 
 The fixture contains synthetic values only. It is not a backup and must never contain a real user key, real memory content, or production media.
+
+## Pre-release stability suite
+
+The pre-release stability suite adds focused lifecycle and privacy-reset smoke evidence without changing production retention or encryption behavior. `service_lifecycle_test.dart` verifies that `sl.reset()` closes the owned Drift database, that a complete reset permits a fresh `sl.initialize()` graph, that `AuthService.dispose()` invalidates the old session until a newly initialized singleton is used, and that an empty secure-media path is a safe no-op. `privacy_reset_smoke_test.dart` inserts representative Drift data, runs the complete reset, verifies the successful independent audit record, confirms Hive and authentication shutdown, and reopens the SQLite file to verify that all sensitive tables are empty and durable after reset.
+
+The performance suite continues to measure 100 memory writes and repeated reads for diagnostic output, but it no longer treats fixed wall-clock thresholds as correctness gates. Timing depends on the hosted runner, SQLite backend, debug/profile mode, and concurrent CI load; performance budgets remain a separate benchmark concern and must be calibrated from recorded runner evidence before becoming release gates.
+
+Local verification is intentionally limited to Dart formatting and repository diff checks in the current sandbox. Flutter analysis, widget/integration execution, and build verification remain authoritative only through the repository's GitHub Actions gates; this suite does not claim local Flutter success.
 
 ## Verification boundary
 
