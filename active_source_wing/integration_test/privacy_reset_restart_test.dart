@@ -40,12 +40,27 @@ void main() {
       await tester.tap(labEntry);
       await _pumpUntil(
         tester,
-        find.text('صيانة الخصوصية - Privacy Maintenance'),
+        find.text('مختبر الذكاء المعرفي'),
+        reason: 'The intelligence lab did not open on the device.',
+      );
+
+      final maintenanceButton =
+          find.text('صيانة الخصوصية - Privacy Maintenance');
+      await tester.scrollUntilVisible(
+        maintenanceButton,
+        500.0,
+        scrollable: find.byType(Scrollable).first,
+        maxScrolls: 30,
+      );
+      await tester.pump(const Duration(seconds: 2));
+      await _pumpUntil(
+        tester,
+        maintenanceButton,
         reason:
             'The privacy maintenance control was not reachable on the device.',
       );
 
-      await tester.tap(find.text('صيانة الخصوصية - Privacy Maintenance'));
+      await tester.tap(maintenanceButton);
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('تأكيد صيانة البيانات وحماية الخصوصية'), findsOneWidget);
 
