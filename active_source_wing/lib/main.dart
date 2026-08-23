@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,16 +40,6 @@ import 'features/home/widgets/cognitive_identity_widgets.dart';
 Future<void> main() async {
   // تهيئة Flutter
   WidgetsFlutterBinding.ensureInitialized();
-  ErrorWidget.builder = (_) => const ColoredBox(
-        color: Color(0xFF0F172A),
-        child: Center(
-          child: Text(
-            'تعذر عرض هذه الشاشة. يرجى إعادة المحاولة.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      );
 
   // تسجيل بداية التطبيق
   WingLogger.info('تطبيق جناح الحنين يبدأ التشغيل', tag: 'Main');
@@ -89,6 +80,12 @@ Future<void> main() async {
       data: {'incident_id': incidentId, 'error': e.toString()},
       stackTrace: stackTrace,
     );
+    if (kDebugMode) {
+      debugPrint(
+        'Startup failure [$incidentId]: ${e.runtimeType}: $e',
+      );
+      debugPrintStack(stackTrace: stackTrace);
+    }
 
     // لا تُمرر تفاصيل الاستثناء إلى واجهة المستخدم أو مراقب الصحة.
     DependencyHealthMonitor.reportFailure('startup', 'initialization_failed');

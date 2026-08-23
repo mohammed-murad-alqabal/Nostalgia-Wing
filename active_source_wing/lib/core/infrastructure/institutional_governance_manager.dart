@@ -9,7 +9,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
-import 'package:path_provider/path_provider.dart';
+import 'app_storage_directory.dart';
 
 /// Principles of Institutional Governance.
 enum GovernancePrinciple {
@@ -159,7 +159,7 @@ class InstitutionalGovernanceManager {
 
     try {
       // Setup audit log file
-      final directory = await getApplicationDocumentsDirectory();
+      final directory = await resolveAppDocumentsDirectory();
       _auditLogFile = File('${directory.path}/governance_audit_logs.json');
 
       // Load existing logs
@@ -171,7 +171,7 @@ class InstitutionalGovernanceManager {
         severity: SeverityLevel.medium,
         description: 'Institutional Governance & Ethics System Initialized',
         metadata: {
-          'version': '2.1.0',
+          'version': '2.2.0+1',
           'principles': GovernancePrinciple.values.map((p) => p.name).toList(),
         },
         userId: 'system',

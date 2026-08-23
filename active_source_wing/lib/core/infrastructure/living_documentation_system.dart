@@ -9,7 +9,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'package:logging/logging.dart';
-import 'package:path_provider/path_provider.dart';
+import 'app_storage_directory.dart';
 
 /// The type of documentation.
 enum DocumentationType {
@@ -301,7 +301,7 @@ class LivingDocumentationSystem {
 
     try {
       // Create documentation directory
-      final appDir = await getApplicationDocumentsDirectory();
+      final appDir = await resolveAppDocumentsDirectory();
       _docsDirectory = Directory('${appDir.path}/living_docs');
 
       // File existence check required for initialization
@@ -321,7 +321,7 @@ class LivingDocumentationSystem {
         author: 'system',
         tags: ['initialization', 'system'],
         metadata: {
-          'version': '2.1.0',
+          'version': '2.2.0+1',
           'features': [
             'التوثيق المضمن في الكود',
             'المواصفات القابلة للتنفيذ',

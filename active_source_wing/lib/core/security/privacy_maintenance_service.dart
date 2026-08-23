@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import '../infrastructure/app_storage_directory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cognitive/psychological_context_manager.dart';
@@ -159,7 +159,7 @@ class PrivacyMaintenanceService {
   /// The directory is deleted as a whole so unreferenced encrypted files cannot
   /// survive a successful privacy reset.
   static Future<void> _clearEncryptedMedia() async {
-    final appDir = await getApplicationDocumentsDirectory();
+    final appDir = await resolveAppDocumentsDirectory();
     final secureMediaDir = Directory(p.join(appDir.path, 'secure_media'));
 
     if (secureMediaDir.existsSync()) {

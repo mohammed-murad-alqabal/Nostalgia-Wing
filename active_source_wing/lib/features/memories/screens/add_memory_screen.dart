@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
 import '../../../core/data/app_database.dart';
+import '../../../core/infrastructure/app_storage_directory.dart';
 import '../../../core/services/db_service.dart';
 import '../../../core/di/service_locator.dart';
 
@@ -63,7 +63,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       final encryptedBytes =
           await sl.encryptionService.encryptBytes(imageBytes);
 
-      final appDir = await getApplicationDocumentsDirectory();
+      final appDir = await resolveAppDocumentsDirectory();
       final secureMediaDir = Directory(p.join(appDir.path, 'secure_media'));
       // ignore: avoid_slow_async_io
       // ignore: avoid_slow_async_io

@@ -81,7 +81,7 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Center(
               child: Text(
-                'جناح الحنين v2.1.0',
+                'جناح الحنين v2.2.0',
                 style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.3), fontSize: 12),
               ),

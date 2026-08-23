@@ -28,8 +28,10 @@ void main() {
       for (int i = 0; i < 15; i++) {
         await tester.pump(const Duration(seconds: 2));
 
-        // Search for trigger
-        if (find.byIcon(Icons.science).evaluate().isNotEmpty) {
+        // Search for the actual action button rendered by EnhancedHomeScreen.
+        final labAction = find.text('مختبر الذكاء');
+        if (labAction.evaluate().isNotEmpty ||
+            find.byIcon(Icons.science).evaluate().isNotEmpty) {
           debugPrint(
             'System: SUCCESS -> Intelligence Lab '
             'trigger detected at attempt ${i + 1}',
@@ -62,13 +64,14 @@ void main() {
       }
 
       // 3. Find and Tap 'مختبر الذكاء'
-      final labButton = find.byKey(const Key('lab_fab'));
+      final labButton = find.text('مختبر الذكاء');
       final labIcon = find.byIcon(Icons.science);
-
       final Finder trigger =
           labButton.evaluate().isNotEmpty ? labButton : labIcon;
 
       debugPrint('System: Tapping Intelligence Lab trigger...');
+      await tester.ensureVisible(trigger);
+      await tester.pump();
       await tester.tap(trigger);
 
       // Wait for screen transition and settle animations (Legacy Buffer)
@@ -131,10 +134,15 @@ void main() {
       }
       await tester.pump(const Duration(seconds: 10));
 
+      final labButton = find.text('مختبر الذكاء');
       final labIcon = find.byIcon(Icons.science);
-      expect(labIcon, findsWidgets);
+      final Finder trigger =
+          labButton.evaluate().isNotEmpty ? labButton : labIcon;
+      expect(trigger, findsWidgets);
+      await tester.ensureVisible(trigger.first);
+      await tester.pump();
 
-      await tester.tap(labIcon.first);
+      await tester.tap(trigger.first);
       await tester.pump(const Duration(seconds: 5));
 
       // Tap Back (Standard AppBar Back Icon)
@@ -155,7 +163,7 @@ void main() {
 
       await tester.pump(const Duration(seconds: 5));
 
-      expect(find.byIcon(Icons.science), findsWidgets);
+      expect(find.text('مختبر الذكاء'), findsWidgets);
     });
   });
 }

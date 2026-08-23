@@ -102,9 +102,15 @@ The project maintains high code quality standards with comprehensive test covera
   flutter test
   ```
 - **Run performance tests**:
-  ```bash
-  flutter test test/performance/performance_security_test.dart
-  ```
+   ```bash
+   flutter test test/performance/performance_security_test.dart
+   ```
+- **Run Linux integration tests** (requires CMake, GTK, GStreamer, and Xvfb on CI hosts):
+   ```bash
+   ./tool/run_linux_integration.sh
+   ```
+   The script enables `NOSTALGIA_TEST_STORAGE_FALLBACK` only for the test process;
+   production builds never use the temporary storage fallback.
 
 ## Security
 
