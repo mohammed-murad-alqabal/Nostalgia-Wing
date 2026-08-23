@@ -64,7 +64,7 @@ Future<void> main() async {
       'تم تهيئة جميع خدمات SEF بنجاح',
       'system_initialization',
       metadata: {
-        'version': '2.1.0',
+        'version': '2.2.0+1',
         'timestamp': DateTime.now().toIso8601String(),
       },
     );
