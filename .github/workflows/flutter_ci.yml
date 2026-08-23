@@ -87,25 +87,7 @@ jobs:
           emulator-boot-timeout: 900
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: |
-            bash -lc '
-            set -o pipefail
-            cd active_source_wing
-            mkdir -p android-integration-diagnostics
-            flutter pub get 2>&1 | tee android-integration-diagnostics/pub-get.log
-            pub_status=${PIPESTATUS[0]}
-            if [ "$pub_status" -ne 0 ]; then
-              exit "$pub_status"
-            fi
-            timeout --signal=TERM --kill-after=30s 10m \
-              flutter test integration_test/privacy_reset_restart_test.dart \
-                -d emulator-5554 --verbose 2>&1 | tee android-integration-diagnostics/flutter-test.log
-            test_status=${PIPESTATUS[0]}
-            adb devices -l > android-integration-diagnostics/adb-devices.log 2>&1 || true
-            adb shell dumpsys activity activities > android-integration-diagnostics/adb-activity.log 2>&1 || true
-            adb logcat -d -t 300 > android-integration-diagnostics/adb-logcat.log 2>&1 || true
-            exit "$test_status"
-            '
+          script: bash active_source_wing/tool/run_android_privacy_reset_integration.sh
 
       - name: Upload Android integration diagnostics
         if: always()
