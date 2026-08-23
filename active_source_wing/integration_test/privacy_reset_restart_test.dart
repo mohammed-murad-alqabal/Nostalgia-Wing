@@ -38,19 +38,25 @@ void main() {
       expect(mediaFile.existsSync(), isTrue);
 
       final labEntry = find.text('مختبر الذكاء المعرفي').first;
+      await tester.ensureVisible(labEntry);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(labEntry);
+
+      final labTitle = find.text('مختبر الذكاء المعرفي');
       await _pumpUntil(
         tester,
-        find.text('مختبر الذكاء المعرفي'),
+        labTitle,
         reason: 'The intelligence lab did not open on the device.',
       );
 
       final maintenanceButton =
           find.text('صيانة الخصوصية - Privacy Maintenance');
+      final labScrollView = find.byType(CustomScrollView);
+      expect(labScrollView, findsOneWidget);
       await tester.scrollUntilVisible(
         maintenanceButton,
         500.0,
-        scrollable: find.byType(Scrollable).first,
+        scrollable: labScrollView,
         maxScrolls: 30,
       );
       await tester.pump(const Duration(seconds: 2));
