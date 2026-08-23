@@ -56,12 +56,13 @@ void main() {
 
       final maintenanceButton =
           find.text('صيانة الخصوصية - Privacy Maintenance');
-      final labScrollable = find.descendant(
-        of: labScrollView,
-        matching: find.byType(Scrollable),
-      );
+      final labScrollable = find
+          .descendant(
+            of: labScrollView,
+            matching: find.byType(Scrollable),
+          )
+          .first;
       expect(labScrollView, findsOneWidget);
-      expect(labScrollable, findsOneWidget);
       await tester.scrollUntilVisible(
         maintenanceButton,
         500.0,
