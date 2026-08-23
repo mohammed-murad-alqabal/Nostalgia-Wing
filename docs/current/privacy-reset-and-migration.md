@@ -4,12 +4,12 @@
 > **Owner:** فريق تطوير مشروع جناح الحنين
 > **Authority:** عقد الخصوصية المحلي، `PrivacyMaintenanceService`، و`AppDatabase` عند schema version 3
 > **Last verified:** 2026-08-19
-> **Verified commit:** `chore/pre-release-stability-suite` branch under review
+> **Verified commit:** `fix/android-privacy-reset-integration-v2` branch under review; platform evidence is pending
 > **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/security/security_service.dart`, `active_source_wing/lib/core/security/key_manager.dart`, `active_source_wing/lib/core/security/versioned_encryption_service.dart`, `active_source_wing/lib/core/security/decryption_observer.dart`,
 > `active_source_wing/lib/core/services/secure_media_cleanup_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/core/data/app_database.dart`
 > **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/security/security_service_test.dart`, `active_source_wing/test/core/security/versioned_encryption_service_test.dart`,
 > `active_source_wing/test/core/services/secure_media_cleanup_service_test.dart`, `active_source_wing/test/core/services/db_service_test.dart`, `active_source_wing/test/core/data/app_database_migration_test.dart`, `active_source_wing/test/fixtures/drift_v2.sqlite`,
-> `active_source_wing/test/core/lifecycle/service_lifecycle_test.dart`, `active_source_wing/test/core/smoke/privacy_reset_smoke_test.dart`
+> `active_source_wing/test/core/lifecycle/service_lifecycle_test.dart`, `active_source_wing/test/core/smoke/privacy_reset_smoke_test.dart`, `active_source_wing/integration_test/privacy_reset_restart_test.dart`
 
 ## Purpose
 
@@ -73,11 +73,17 @@ The pre-release stability suite adds focused lifecycle and privacy-reset smoke e
 
 The performance suite continues to measure 100 memory writes and repeated reads for diagnostic output, but it no longer treats fixed wall-clock thresholds as correctness gates. Timing depends on the hosted runner, SQLite backend, debug/profile mode, and concurrent CI load; performance budgets remain a separate benchmark concern and must be calibrated from recorded runner evidence before becoming release gates.
 
+## Platform integration evidence
+
+The Android integration test launches the real application, writes synthetic records to Drift, Hive, and `secure_media`, executes privacy maintenance through the production UI, verifies the successful audit outcome and deletion boundaries, and invokes the real entrypoint again to model a fresh initialization. The restarted application must render the normal app root rather than `EmergencyApp`, retain the non-sensitive audit result, and expose empty local data stores.
+
+The test is deliberately platform-scoped because it exercises `path_provider`, Hive, Flutter Secure Storage, the application entrypoint, and an Android emulator. It is not included in the local unit-test command and must run in the dedicated `platform-integration` GitHub Actions job. Test data is synthetic and must never include a real key, memory, media file, or production account.
+
 Local verification is intentionally limited to Dart formatting and repository diff checks in the current sandbox. Flutter analysis, widget/integration execution, and build verification remain authoritative only through the repository's GitHub Actions gates; this suite does not claim local Flutter success.
 
 ## Verification boundary
 
-Dart formatting and `git diff --check` may run locally. Flutter analysis, tests, and build verification are authoritative only through GitHub Actions for this repository because Flutter is not installed in the current sandbox. A PR may be merged only after the documentation governance, Flutter quality gate, and repository hygiene checks pass and the project owner confirms the merge.
+Dart formatting, `git diff --check`, and static source review may run locally. Flutter analysis, unit/widget tests, build verification, and the Android platform integration test are authoritative only through GitHub Actions for this repository because Flutter is not installed in the current sandbox. A PR may be merged only after the documentation governance, Flutter quality gate, Android platform integration, and repository hygiene checks pass and the project owner confirms the merge.
 
 ## References
 
