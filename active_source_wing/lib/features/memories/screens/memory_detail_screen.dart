@@ -40,22 +40,20 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
 
   Future<void> _decryptContent() async {
     try {
-      final key = await sl.keyManager.getMasterKey();
-
-      // Decrypt Title (In our new implementation, title is encrypted in the DB)
+      // Resolve the key from each payload's versioned envelope.
       final decryptedTitle =
-          await sl.securityService.decrypt(_currentMemory.title, key);
+          await sl.encryptionService.decrypt(_currentMemory.title);
 
       // Decrypt Description
-      final decryptedDesc = await sl.securityService
-          .decrypt(_currentMemory.encryptedContent, key);
+      final decryptedDesc =
+          await sl.encryptionService.decrypt(_currentMemory.encryptedContent);
 
       // Decrypt Image if exists
       Uint8List? imageBytes;
       if (_currentMemory.mediaPath != null) {
         final encryptedBytes =
             await File(_currentMemory.mediaPath!).readAsBytes();
-        imageBytes = await sl.securityService.decryptBytes(encryptedBytes, key);
+        imageBytes = await sl.encryptionService.decryptBytes(encryptedBytes);
       }
 
       if (mounted) {
@@ -80,13 +78,6 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
   Future<void> _deleteMemory() async {
     final dbService = Provider.of<DBService>(context, listen: false);
     await dbService.deleteMemory(_currentMemory.id);
-    if (_currentMemory.mediaPath != null) {
-      final file = File(_currentMemory.mediaPath!);
-      // ignore: avoid_slow_async_io
-      if (await file.exists()) {
-        await file.delete();
-      }
-    }
     widget.onClose();
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/native.dart';
 import 'package:wing_of_nostalgia/core/data/app_database.dart';
+import 'package:wing_of_nostalgia/core/services/auth_service.dart';
 import 'package:wing_of_nostalgia/core/services/db_service.dart';
 import 'package:wing_of_nostalgia/core/di/service_locator.dart';
 import 'package:drift/drift.dart' as drift;
@@ -22,9 +23,11 @@ void main() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     await sl.initialize(testDb: db);
     dbService = DBService();
+    await AuthService.instance.authenticate();
   });
 
   tearDown(() async {
+    await AuthService.instance.logout();
     await db.close();
     await sl.reset();
   });

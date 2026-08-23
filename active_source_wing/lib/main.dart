@@ -36,7 +36,7 @@ import 'features/home/widgets/cognitive_identity_widgets.dart';
 
 /// التطبيق الرئيسي - جناح الحنين
 /// كيان هندسي حي للحب والحنين مع نظام ذكاء عاطفي متقدم
-void main() async {
+Future<void> main() async {
   // تهيئة Flutter
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -60,13 +60,15 @@ void main() async {
     );
 
     // تشغيل التطبيق مع الخدمات المهيأة
-    runApp(WingOfNostalgiaApp(
-      dbService: result.dbService,
-      notificationService: result.notificationService,
-      emotionalMessageService: result.emotionalMessageService,
-      contextManager: result.contextManager,
-      safetyBoxService: result.safetyBoxService,
-    ));
+    runApp(
+      WingOfNostalgiaApp(
+        dbService: result.dbService,
+        notificationService: result.notificationService,
+        emotionalMessageService: result.emotionalMessageService,
+        contextManager: result.contextManager,
+        safetyBoxService: result.safetyBoxService,
+      ),
+    );
   } catch (e, stackTrace) {
     final incidentId =
         DateTime.now().microsecondsSinceEpoch.toRadixString(36).toUpperCase();
@@ -74,10 +76,7 @@ void main() async {
     WingLogger.critical(
       'فشل في تهيئة التطبيق',
       tag: 'Main',
-      data: {
-        'incident_id': incidentId,
-        'error': e.toString(),
-      },
+      data: {'incident_id': incidentId, 'error': e.toString()},
       stackTrace: stackTrace,
     );
 
@@ -85,7 +84,7 @@ void main() async {
     DependencyHealthMonitor.reportFailure('startup', 'initialization_failed');
 
     // تشغيل التطبيق في وضع طوارئ آمن مع معرّف يمكن ربطه بالسجل.
-    runApp(EmergencyApp(incidentId: incidentId));
+    runApp(EmergencyApp(incidentId: incidentId, onRetry: main));
   }
 }
 
@@ -154,7 +153,8 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
               value: widget.notificationService),
           Provider<AuthService>.value(value: AuthService.instance),
           Provider<EmotionalMessageService>.value(
-              value: widget.emotionalMessageService),
+            value: widget.emotionalMessageService,
+          ),
           Provider<SafetyBoxService>.value(value: widget.safetyBoxService),
 
           // النظام النفسي
@@ -177,68 +177,89 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
           // These still need to be created as they depend on services
           // available in context.
           Provider<EmotionalGravityEngine>(
-              create: (context) => EmotionalGravityEngine(
-                    messageService: Provider.of<EmotionalMessageService>(
-                        context,
-                        listen: false),
-                    dbService: Provider.of<DBService>(context, listen: false),
-                    notificationService: Provider.of<NotificationService>(
-                        context,
-                        listen: false),
-                    contextManager: Provider.of<PsychologicalContextManager>(
-                        context,
-                        listen: false),
-                  )),
+            create: (context) => EmotionalGravityEngine(
+              messageService: Provider.of<EmotionalMessageService>(
+                context,
+                listen: false,
+              ),
+              dbService: Provider.of<DBService>(context, listen: false),
+              notificationService: Provider.of<NotificationService>(
+                context,
+                listen: false,
+              ),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
           Provider<SurpriseEvolutionEngine>(
-              create: (context) => SurpriseEvolutionEngine(
-                    dbService: Provider.of<DBService>(context, listen: false),
-                    notificationService: Provider.of<NotificationService>(
-                        context,
-                        listen: false),
-                    contextManager: Provider.of<PsychologicalContextManager>(
-                        context,
-                        listen: false),
-                  )),
+            create: (context) => SurpriseEvolutionEngine(
+              dbService: Provider.of<DBService>(context, listen: false),
+              notificationService: Provider.of<NotificationService>(
+                context,
+                listen: false,
+              ),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
           Provider<DualTruthEngine>(
-              create: (context) => DualTruthEngine(
-                    dbService: Provider.of<DBService>(context, listen: false),
-                    contextManager: Provider.of<PsychologicalContextManager>(
-                        context,
-                        listen: false),
-                  )),
+            create: (context) => DualTruthEngine(
+              dbService: Provider.of<DBService>(context, listen: false),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
           Provider<EmotionalEntanglementModule>(
-              create: (context) => EmotionalEntanglementModule(
-                    dbService: Provider.of<DBService>(context, listen: false),
-                    contextManager: Provider.of<PsychologicalContextManager>(
-                        context,
-                        listen: false),
-                  )),
+            create: (context) => EmotionalEntanglementModule(
+              dbService: Provider.of<DBService>(context, listen: false),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
           Provider<CosmicSynchronizationModule>(
-              create: (context) => CosmicSynchronizationModule(
-                    notificationService: Provider.of<NotificationService>(
-                        context,
-                        listen: false),
-                    contextManager: Provider.of<PsychologicalContextManager>(
-                        context,
-                        listen: false),
-                  )),
+            create: (context) => CosmicSynchronizationModule(
+              notificationService: Provider.of<NotificationService>(
+                context,
+                listen: false,
+              ),
+              contextManager: Provider.of<PsychologicalContextManager>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
           Provider<NonActionInterface>(
-              create: (context) => NonActionInterface(
-                    emotionalGravityEngine: Provider.of<EmotionalGravityEngine>(
-                        context,
-                        listen: false),
-                    surpriseEvolutionEngine:
-                        Provider.of<SurpriseEvolutionEngine>(context,
-                            listen: false),
-                    dualTruthEngine:
-                        Provider.of<DualTruthEngine>(context, listen: false),
-                    emotionalEntanglementModule:
-                        Provider.of<EmotionalEntanglementModule>(context,
-                            listen: false),
-                    cosmicSynchronizationModule:
-                        Provider.of<CosmicSynchronizationModule>(context,
-                            listen: false),
-                  )),
+            create: (context) => NonActionInterface(
+              emotionalGravityEngine: Provider.of<EmotionalGravityEngine>(
+                context,
+                listen: false,
+              ),
+              surpriseEvolutionEngine: Provider.of<SurpriseEvolutionEngine>(
+                context,
+                listen: false,
+              ),
+              dualTruthEngine:
+                  Provider.of<DualTruthEngine>(context, listen: false),
+              emotionalEntanglementModule:
+                  Provider.of<EmotionalEntanglementModule>(
+                context,
+                listen: false,
+              ),
+              cosmicSynchronizationModule:
+                  Provider.of<CosmicSynchronizationModule>(
+                context,
+                listen: false,
+              ),
+            ),
+          ),
         ],
         child: MaterialApp(
           title: 'جناح الحنين',
@@ -424,9 +445,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           children: [
             // خلفية المعرفية الرياضية
             Positioned.fill(
-              child: CognitiveBackground(
-                emotionalColor: Color(0xFF45B7D1),
-              ),
+              child: CognitiveBackground(emotionalColor: Color(0xFF45B7D1)),
             ),
             Center(
               child: Column(
@@ -505,12 +524,38 @@ class _ErrorBoundary extends StatelessWidget {
 
 /// تطبيق الطوارئ في حالة فشل التهيئة
 /// Emergency application widget shown when initialization fails.
-class EmergencyApp extends StatelessWidget {
+class EmergencyApp extends StatefulWidget {
   /// Creates [EmergencyApp].
-  const EmergencyApp({super.key, required this.incidentId});
+  const EmergencyApp({super.key, required this.incidentId, this.onRetry});
 
   /// رمز حادثة آمن لربط رسالة المستخدم بالسجلات التشخيصية.
   final String incidentId;
+
+  /// إعادة محاولة تهيئة التطبيق دون كشف تفاصيل الفشل للمستخدم.
+  final Future<void> Function()? onRetry;
+
+  @override
+  State<EmergencyApp> createState() => _EmergencyAppState();
+}
+
+class _EmergencyAppState extends State<EmergencyApp> {
+  bool _isRetrying = false;
+
+  Future<void> _retryInitialization() async {
+    final onRetry = widget.onRetry;
+    if (onRetry == null || _isRetrying) {
+      return;
+    }
+
+    setState(() => _isRetrying = true);
+    try {
+      await onRetry();
+    } finally {
+      if (mounted) {
+        setState(() => _isRetrying = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -520,9 +565,7 @@ class EmergencyApp extends StatelessWidget {
           body: Stack(
             children: [
               const Positioned.fill(
-                child: CognitiveBackground(
-                  emotionalColor: Color(0xFF45B7D1),
-                ),
+                child: CognitiveBackground(emotionalColor: Color(0xFF45B7D1)),
               ),
               Center(
                 child: SingleChildScrollView(
@@ -548,12 +591,9 @@ class EmergencyApp extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'تعذر بدء التطبيق بأمان. يرجى إغلاقه ثم إعادة فتحه.',
+                        'تعذر بدء التطبيق بأمان. يمكنك إعادة المحاولة الآن.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white70,
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.white70),
                       ),
                       const SizedBox(height: 16),
                       Container(
@@ -566,18 +606,30 @@ class EmergencyApp extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'رمز الحادثة: $incidentId',
+                          'رمز الحادثة: ${widget.incidentId}',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
+                              color: Colors.white, fontSize: 12),
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                      if (widget.onRetry != null) ...[
+                        const SizedBox(height: 24),
+                        OutlinedButton(
+                          onPressed: _isRetrying ? null : _retryInitialization,
+                          child: _isRetrying
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text('إعادة المحاولة'),
+                        ),
+                      ],
                     ],
                   ),
                 ),

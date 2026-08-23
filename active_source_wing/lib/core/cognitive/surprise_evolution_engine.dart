@@ -132,8 +132,7 @@ class SurpriseEvolutionEngine {
   }
 
   Future<void> _persistSurprise(String content, String type) async {
-    final secretKey = await sl.keyManager.getMasterKey();
-    final encrypted = await sl.securityService.encrypt(content, secretKey);
+    final encrypted = await sl.encryptionService.encrypt(content);
     await _dbService.insertSurprise(SurprisesCompanion.insert(
       type: type,
       encryptedContent: encrypted,

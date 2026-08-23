@@ -52,18 +52,16 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
 
     try {
       final dbService = Provider.of<DBService>(context, listen: false);
-      final key = await sl.keyManager.getMasterKey();
-
-      // 1. Encrypt Content
+      // 1. Encrypt Content with the active versioned key.
       final encryptedTitle =
-          await sl.securityService.encrypt(_titleController.text, key);
+          await sl.encryptionService.encrypt(_titleController.text);
       final encryptedDesc =
-          await sl.securityService.encrypt(_descriptionController.text, key);
+          await sl.encryptionService.encrypt(_descriptionController.text);
 
       // 2. Encrypt & Save Image
       final imageBytes = await _imageFile!.readAsBytes();
       final encryptedBytes =
-          await sl.securityService.encryptBytes(imageBytes, key);
+          await sl.encryptionService.encryptBytes(imageBytes);
 
       final appDir = await getApplicationDocumentsDirectory();
       final secureMediaDir = Directory(p.join(appDir.path, 'secure_media'));

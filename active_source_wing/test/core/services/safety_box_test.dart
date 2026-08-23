@@ -1,4 +1,8 @@
+// These tests intentionally exercise the deprecated compatibility API.
+// ignore_for_file: deprecated_member_use
+
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:wing_of_nostalgia/core/services/safety_box_service.dart';
@@ -16,7 +20,8 @@ void main() {
   });
 
   setUp(() async {
-    service = SafetyBoxService();
+    // Existing compatibility tests explicitly opt into the legacy write path.
+    service = SafetyBoxService(allowLegacyWrites: true);
     await service.initialize();
   });
 
@@ -24,7 +29,60 @@ void main() {
     await Hive.deleteBoxFromDisk(SafetyBoxService.boxName);
   });
 
-  group('SafetyBoxService Tests', () {
+  group('SafetyBoxService isolation contract', () {
+    test('legacy writes are disabled by default', () async {
+      final guardedService = SafetyBoxService();
+      await guardedService.initialize();
+
+      expect(
+        () => guardedService.saveReflection(
+          id: 'blocked',
+          content: 'must not be written',
+          key: 'legacy-key',
+        ),
+        throwsStateError,
+      );
+
+      expect(guardedService.getAllIds(), isEmpty);
+    });
+
+    test('legacy writes require explicit opt-in', () async {
+      await service.saveReflection(
+        id: 'explicit-legacy',
+        content: 'legacy content',
+        key: 'legacy-key',
+      );
+
+      expect(
+        await service.getReflection('explicit-legacy', 'legacy-key'),
+        equals('legacy content'),
+      );
+    });
+
+    test('default service can read and delete historical records', () async {
+      await service.saveReflection(
+        id: 'historical-record',
+        content: 'historical content',
+        key: 'historical-key',
+      );
+
+      final compatibilityService = SafetyBoxService();
+      await compatibilityService.initialize();
+
+      expect(
+        await compatibilityService.getReflection(
+          'historical-record',
+          'historical-key',
+        ),
+        equals('historical content'),
+      );
+
+      await compatibilityService.deleteReflection('historical-record');
+      expect(compatibilityService.getAllIds(), isEmpty);
+    });
+  });
+
+  group('SafetyBoxService compatibility tests', () {
     test('saveReflection and getReflection should work with correct key',
         () async {
       const id = 'test_1';
@@ -45,13 +103,12 @@ void main() {
 
       await service.saveReflection(id: id, content: content, key: correctKey);
 
-      // Decrypting with incorrect key should result
-      // in different data
+      // The legacy format has no MAC. A wrong key may either produce different
+      // text or fail UTF-8 decoding; neither outcome is treated as success.
       try {
         final decrypted = await service.getReflection(id, wrongKey);
         expect(decrypted, isNot(equals(content)));
       } catch (e) {
-        // utf8.decode might throw if XOR results in invalid bytes
         expect(e, isNotNull);
       }
     });
@@ -74,7 +131,6 @@ void main() {
 
     test('double encryption should result in non-human readable payload',
         () async {
-      // Accessing the box directly to check the payload
       const id = 'enc_test';
       const content = 'Secret Message';
       const key = 'secure_key';

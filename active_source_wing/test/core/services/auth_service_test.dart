@@ -6,21 +6,48 @@ void main() {
     late AuthService authService;
 
     setUp(() async {
+      AuthService.instance.dispose();
       authService = AuthService.instance;
-      // Ensure clean state if possible
-      await authService.logout();
     });
 
     test('Initial state should be unauthenticated', () {
       expect(authService.isAuthenticated, isFalse);
     });
 
-    test('Authenticate should return true and set isAuthenticated', () async {
+    test('Initialize should not open a local session', () async {
       await authService.initialize();
+
+      expect(authService.isAuthenticated, isFalse);
+    });
+
+    test('Authenticate should return true and set isAuthenticated', () async {
       final result = await authService.authenticate();
 
       expect(result, isTrue);
       expect(authService.isAuthenticated, isTrue);
+    });
+
+    test('Repeated authenticate calls keep the same local session state',
+        () async {
+      expect(await authService.authenticate(), isTrue);
+      expect(await authService.authenticate(), isTrue);
+      expect(authService.isAuthenticated, isTrue);
+    });
+
+    test('Protected operations require an authenticated session', () async {
+      expect(
+        authService.requireAuthenticated,
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
+
+      await authService.authenticate();
+      expect(authService.requireAuthenticated, returnsNormally);
+
+      await authService.logout();
+      expect(
+        authService.requireAuthenticated,
+        throwsA(isA<AuthenticationRequiredException>()),
+      );
     });
 
     test('Logout should set isAuthenticated to false', () async {
@@ -29,6 +56,23 @@ void main() {
 
       await authService.logout();
       expect(authService.isAuthenticated, isFalse);
+    });
+
+    test('Repeated logout calls remain safe and unauthenticated', () async {
+      await authService.logout();
+      await authService.logout();
+
+      expect(authService.isAuthenticated, isFalse);
+    });
+
+    test('Dispose clears the session and allows a fresh local session',
+        () async {
+      await authService.authenticate();
+      authService.dispose();
+
+      final freshAuthService = AuthService.instance;
+      expect(freshAuthService.isAuthenticated, isFalse);
+      expect(await freshAuthService.authenticate(), isTrue);
     });
   });
 }

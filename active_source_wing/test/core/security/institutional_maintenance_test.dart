@@ -11,6 +11,7 @@ import 'package:wing_of_nostalgia/core/data/app_database.dart';
 import 'package:wing_of_nostalgia/core/di/service_locator.dart';
 import 'package:wing_of_nostalgia/core/security/key_manager.dart';
 import 'package:wing_of_nostalgia/core/security/privacy_maintenance_service.dart';
+import 'package:wing_of_nostalgia/core/security/privacy_reset_audit_store.dart';
 import 'package:wing_of_nostalgia/core/services/auth_service.dart';
 import 'package:wing_of_nostalgia/core/services/safety_box_service.dart';
 
@@ -21,11 +22,15 @@ void main() {
   final binaryMessenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   late Directory tempDir;
+  late File databaseFile;
   late AppDatabase database;
   late _TrackingKeyManager keyManager;
+  late PrivacyResetAuditStore auditStore;
+  late _InMemoryPrivacyResetAuditStorage auditStorage;
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('privacy-maintenance-');
+    databaseFile = File('${tempDir.path}/privacy.sqlite');
     Hive.init(tempDir.path);
     SharedPreferences.setMockInitialValues({'test_key': 'test_value'});
 
@@ -36,10 +41,12 @@ void main() {
       return null;
     });
 
-    database = AppDatabase.forTesting(NativeDatabase.memory());
+    database = AppDatabase.forTesting(NativeDatabase(databaseFile));
     await sl.initialize(testDb: database);
     keyManager = _TrackingKeyManager();
     sl.keyManager = keyManager;
+    auditStorage = _InMemoryPrivacyResetAuditStorage();
+    auditStore = PrivacyResetAuditStore(storage: auditStorage);
 
     await AuthService.instance.initialize();
     await AuthService.instance.authenticate();
@@ -51,7 +58,9 @@ void main() {
   tearDown(() async {
     await sl.reset();
     await Hive.close();
-    tempDir.deleteSync(recursive: true);
+    if (tempDir.existsSync()) {
+      tempDir.deleteSync(recursive: true);
+    }
     binaryMessenger.setMockMethodCallHandler(pathProviderChannel, null);
   });
 
@@ -89,12 +98,19 @@ void main() {
             ),
           );
 
-      await PrivacyMaintenanceService.maintenanceReset();
+      await PrivacyMaintenanceService.maintenanceReset(auditStore: auditStore);
 
-      expect(await database.select(database.memories).get(), isEmpty);
-      expect(await database.select(database.reflections).get(), isEmpty);
-      expect(await database.select(database.sentMessages).get(), isEmpty);
-      expect(await database.select(database.surprises).get(), isEmpty);
+      final audit = await auditStore.read();
+      expect(audit, isNotNull);
+      expect(audit!.status, PrivacyResetAuditStatus.succeeded);
+      expect(audit.startedAt.isUtc, isTrue);
+      expect(audit.finishedAt, isNotNull);
+      expect(audit.finishedAt!.isUtc, isTrue);
+      expect(audit.finishedAt!.isAfter(audit.startedAt), isTrue);
+      expect(audit.failedStep, isNull);
+      expect(audit.errorType, isNull);
+
+      expect(sl.isInitialized, isFalse);
       expect(secureMediaDir.existsSync(), isFalse);
       expect(
         (await SharedPreferences.getInstance()).getString('test_key'),
@@ -104,23 +120,88 @@ void main() {
       expect(Hive.isBoxOpen(PsychologicalContextManager.boxName), isFalse);
       expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
       expect(keyManager.wasCleared, isTrue);
+
+      final reopenedDatabase = AppDatabase.forTesting(
+        NativeDatabase(databaseFile),
+      );
+      try {
+        expect(
+          await reopenedDatabase.select(reopenedDatabase.memories).get(),
+          isEmpty,
+        );
+        expect(
+          await reopenedDatabase.select(reopenedDatabase.reflections).get(),
+          isEmpty,
+        );
+        expect(
+          await reopenedDatabase.select(reopenedDatabase.sentMessages).get(),
+          isEmpty,
+        );
+        expect(
+          await reopenedDatabase.select(reopenedDatabase.surprises).get(),
+          isEmpty,
+        );
+      } finally {
+        await reopenedDatabase.close();
+      }
     },
   );
+
+  test('privacy maintenance is idempotent after a successful reset', () async {
+    final secureMediaDir = Directory('${tempDir.path}/secure_media');
+    await secureMediaDir.create();
+    await File('${secureMediaDir.path}/repeat-reset.enc')
+        .writeAsString('ciphertext');
+    await database.into(database.memories).insert(
+          MemoriesCompanion.insert(
+            title: 'Repeat reset memory',
+            encryptedContent: 'Encrypted content',
+            createdAt: drift.Value(DateTime.now()),
+          ),
+        );
+
+    await PrivacyMaintenanceService.maintenanceReset(auditStore: auditStore);
+    final firstAudit = await auditStore.read();
+    expect(firstAudit?.status, PrivacyResetAuditStatus.succeeded);
+    expect(firstAudit?.finishedAt, isNotNull);
+
+    await PrivacyMaintenanceService.maintenanceReset(auditStore: auditStore);
+    final secondAudit = await auditStore.read();
+    expect(secondAudit?.status, PrivacyResetAuditStatus.succeeded);
+    expect(secondAudit?.startedAt.isAfter(firstAudit!.startedAt), isTrue);
+    expect(secondAudit?.finishedAt, isNotNull);
+    expect(secondAudit!.finishedAt!.isAfter(secondAudit.startedAt), isTrue);
+    expect(sl.isInitialized, isFalse);
+    expect(Hive.isBoxOpen(PsychologicalContextManager.boxName), isFalse);
+    expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
+    expect(secureMediaDir.existsSync(), isFalse);
+  });
 
   test('privacy maintenance propagates a key invalidation failure', () async {
     sl.keyManager = _FailingKeyManager();
 
     await expectLater(
-      PrivacyMaintenanceService.maintenanceReset(),
+      PrivacyMaintenanceService.maintenanceReset(auditStore: auditStore),
       throwsA(isA<StateError>()),
     );
 
-    // يفشل المسار بصورة ظاهرة للمستدعي ولا يدّعي نجاح التصفير.
+    // يفشل المسار بصورة ظاهرة للمستدعي ولا يدّعي نجاح التصفير، مع إغلاق
+    // الموارد حتى لا يبقى التطبيق مهيأً بمفتاح غير صالح.
+    final audit = await auditStore.read();
+    expect(audit, isNotNull);
+    expect(audit!.status, PrivacyResetAuditStatus.failed);
+    expect(audit.failedStep, 'master key invalidation');
+    expect(audit.errorType, 'StateError');
+    expect(audit.finishedAt, isNotNull);
+
+    expect(sl.isInitialized, isFalse);
     expect(
       (await SharedPreferences.getInstance()).getString('test_key'),
       isNull,
     );
     expect(AuthService.instance.isAuthenticated, isFalse);
+    expect(Hive.isBoxOpen(PsychologicalContextManager.boxName), isFalse);
+    expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
   });
 }
 
@@ -137,5 +218,17 @@ class _FailingKeyManager extends KeyManager {
   @override
   Future<void> clearMasterKey() {
     throw StateError('simulated key invalidation failure');
+  }
+}
+
+class _InMemoryPrivacyResetAuditStorage implements PrivacyResetAuditStorage {
+  final values = <String, String>{};
+
+  @override
+  Future<String?> read({required String key}) async => values[key];
+
+  @override
+  Future<void> write({required String key, required String value}) async {
+    values[key] = value;
   }
 }

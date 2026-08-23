@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/db_service.dart';
-import '../../../core/security/security_service.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/services/sensory_feedback_service.dart';
 
@@ -21,7 +20,6 @@ class SurpriseScreen extends StatefulWidget {
 
 class _SurpriseScreenState extends State<SurpriseScreen> {
   late DBService _dbService;
-  final SecurityService _security = sl.securityService;
 
   bool _isLoading = true;
   List<Map<String, dynamic>> _surprises = [];
@@ -36,12 +34,10 @@ class _SurpriseScreenState extends State<SurpriseScreen> {
   Future<void> _loadSurprises() async {
     setState(() => _isLoading = true);
     final rawSurprises = await _dbService.getSurprises();
-    final secretKey = await sl.keyManager.getMasterKey();
-
     final decodedList = <Map<String, dynamic>>[];
     for (final s in rawSurprises) {
       try {
-        final content = await _security.decrypt(s.encryptedContent, secretKey);
+        final content = await sl.encryptionService.decrypt(s.encryptedContent);
         decodedList.add({
           'id': s.id,
           'type': s.type,

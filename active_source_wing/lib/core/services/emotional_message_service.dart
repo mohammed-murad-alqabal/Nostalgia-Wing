@@ -6,7 +6,6 @@ import '../cognitive/psychological_context_manager.dart';
 import '../models/message_template.dart';
 import '../data/app_database.dart';
 import '../services/db_service.dart';
-import '../security/security_service.dart';
 import '../di/service_locator.dart';
 
 /// Service for generating emotional messages and responses.
@@ -34,8 +33,7 @@ class EmotionalMessageService {
   /// Database service for persistence.
   final DBService dbService;
 
-  /// Security service for encryption.
-  final SecurityService _security = sl.securityService;
+  /// Versioned encryption facade for message payloads.
 
   /// Saves a sent message to encrypted history.
   Future<void> saveSentMessage({
@@ -43,8 +41,7 @@ class EmotionalMessageService {
     required String type,
     String? recipientId,
   }) async {
-    final secretKey = await sl.keyManager.getMasterKey();
-    final encryptedContent = await _security.encrypt(content, secretKey);
+    final encryptedContent = await sl.encryptionService.encrypt(content);
 
     await dbService.insertSentMessage(SentMessagesCompanion.insert(
       encryptedContent: encryptedContent,
@@ -57,13 +54,12 @@ class EmotionalMessageService {
   /// Retrieves decrypted message history.
   Future<List<Map<String, dynamic>>> getDecryptedHistory() async {
     final history = await dbService.getSentMessages();
-    final secretKey = await sl.keyManager.getMasterKey();
     final decryptedList = <Map<String, dynamic>>[];
 
     for (final entry in history) {
       try {
         final decryptedContent =
-            await _security.decrypt(entry.encryptedContent, secretKey);
+            await sl.encryptionService.decrypt(entry.encryptedContent);
         decryptedList.add({
           'id': entry.id,
           'content': decryptedContent,
