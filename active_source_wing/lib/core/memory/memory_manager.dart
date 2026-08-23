@@ -134,7 +134,14 @@ class MemoryManager with WidgetsBindingObserver {
     }
 
     // تنظيف الموارد غير المستخدمة
-    final unusedResources = _resources.where((r) => !r.isActive).toList();
+    // AnimationResource instances are owned by a live StatefulWidget. Their
+    // controllers can be paused safely, but disposing them here would make a
+    // later lifecycle resume call target disposed controllers. The owning
+    // widget performs the final cleanup from its dispose method.
+    final unusedResources = _resources
+        .where((resource) =>
+            !resource.isActive && resource is! AnimationResource)
+        .toList();
     for (final resource in unusedResources) {
       resource.cleanup();
       _resources.remove(resource);

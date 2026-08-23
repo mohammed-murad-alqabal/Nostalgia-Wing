@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 /// نظام مراقبة الأداء - Performance Monitoring System
@@ -39,14 +42,16 @@ class PerformanceMonitor {
   static const int maxStartupTimeMs = 2000;
 
   bool _isMonitoring = false;
+  bool _timingsCallbackRegistered = false;
   int _currentMemoryUsageMB = 0;
-  final double _currentFrameRate = 60.0;
+  double _currentFrameRate = targetFrameRate.toDouble();
 
   /// بدء مراقبة الأداء
   void startMonitoring() {
     if (_isMonitoring) return;
 
     _isMonitoring = true;
+    _registerFrameTimingsCallback();
     _startMemoryMonitoring();
 
     if (kDebugMode) {
@@ -58,10 +63,43 @@ class PerformanceMonitor {
   void stopMonitoring() {
     _isMonitoring = false;
     _memoryMonitorTimer?.cancel();
+    _unregisterFrameTimingsCallback();
 
     if (kDebugMode) {
       print('🔍 Performance Monitor: Stopped monitoring');
     }
+  }
+
+  void _registerFrameTimingsCallback() {
+    if (_timingsCallbackRegistered) return;
+    SchedulerBinding.instance.addTimingsCallback(_handleFrameTimings);
+    _timingsCallbackRegistered = true;
+  }
+
+  void _unregisterFrameTimingsCallback() {
+    if (!_timingsCallbackRegistered) return;
+    SchedulerBinding.instance.removeTimingsCallback(_handleFrameTimings);
+    _timingsCallbackRegistered = false;
+  }
+
+  void _handleFrameTimings(List<FrameTiming> timings) {
+    if (!_isMonitoring || timings.isEmpty) return;
+
+    final totalMicros = timings.fold<int>(
+      0,
+      (sum, timing) => sum + timing.totalSpan.inMicroseconds,
+    );
+    final averageMicros = totalMicros / timings.length;
+    if (averageMicros <= 0) return;
+
+    // A display cannot render faster than the target used by the app. Cap the
+    // reported value so a short frame does not make the adaptive policy overly
+    // optimistic.
+    _currentFrameRate = math.min(
+      targetFrameRate.toDouble(),
+      Duration.microsecondsPerSecond / averageMicros,
+    ).toDouble();
+    _updatePerformanceLevel();
   }
 
   /// بدء مؤقت الأداء
@@ -243,8 +281,8 @@ class PerformanceMonitor {
 
   /// تنزيل الموارد
   void dispose() {
+    stopMonitoring();
     _levelController.close();
-    _memoryMonitorTimer?.cancel();
   }
 }
 

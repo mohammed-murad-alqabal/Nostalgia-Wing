@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing_of_nostalgia/core/services/auth_service.dart';
-import 'package:wing_of_nostalgia/core/security/secure_data_manager.dart';
+import 'package:cryptography/cryptography.dart';
+import 'package:wing_of_nostalgia/core/security/password_security_utils.dart';
+import 'package:wing_of_nostalgia/core/security/security_service.dart';
 
 /// Error handling and resilience tests.
 void main() {
@@ -36,65 +38,58 @@ void main() {
     });
   });
 
-  group('Error Handling - SecureDataManager', () {
-    test('Encryption should handle empty string', () {
-      final result = SecureDataManager.encryptData('');
+  group('Error Handling - SecurityService', () {
+    final service = SecurityService();
+    final key = SecretKeyData(List<int>.filled(32, 7));
+
+    test('AES-GCM encryption should handle empty string', () async {
+      final result = await service.encrypt('', key);
       expect(result, isNotEmpty);
+      expect(await service.decrypt(result, key), isEmpty);
     });
 
-    test('Encryption and decryption should be reversible', () {
+    test('AES-GCM encryption and decryption should be reversible', () async {
       const original = 'Sensitive data: أهلاً وسهلاً';
-      final encrypted = SecureDataManager.encryptData(original);
-      final decrypted = SecureDataManager.decryptData(encrypted);
+      final encrypted = await service.encrypt(original, key);
+      final decrypted = await service.decrypt(encrypted, key);
 
       expect(decrypted, original);
     });
 
-    test('Encryption with custom key should work', () {
+    test('AES-GCM encryption with a separate key should work', () async {
       const original = 'Secret message';
-      const userKey = 'my-secret-key-123';
+      final customKey = SecretKeyData(List<int>.generate(32, (i) => i + 1));
 
-      final encrypted = SecureDataManager.encryptData(
-        original,
-        userKey: userKey,
-      );
-      final decrypted = SecureDataManager.decryptData(
-        encrypted,
-        userKey: userKey,
-      );
+      final encrypted = await service.encrypt(original, customKey);
+      final decrypted = await service.decrypt(encrypted, customKey);
 
       expect(decrypted, original);
     });
 
-    test('Wrong key should throw SecurityException', () {
+    test('Wrong key should reject authenticated ciphertext', () async {
       const original = 'Secret message';
-      final encrypted = SecureDataManager.encryptData(
-        original,
-        userKey: 'correct-key',
-      );
+      final encrypted = await service.encrypt(original, key);
+      final wrongKey = SecretKeyData(List<int>.filled(32, 8));
 
-      expect(
-        () => SecureDataManager.decryptData(
-          encrypted,
-          userKey: 'wrong-key',
-        ),
-        throwsA(isA<SecurityException>()),
+      await expectLater(
+        service.decrypt(encrypted, wrongKey),
+        throwsA(isA<Object>()),
       );
     });
 
     test('Password strength checker works correctly', () {
       // 'weak' = 4 chars (no length bonus), 1 lowercase = 1
-      expect(SecureDataManager.checkPasswordStrength('weak'), 1);
+      expect(PasswordSecurityUtils.checkStrength('weak'), 1);
       // 'Stronger' = 8 chars + lowercase + uppercase = 3
-      expect(SecureDataManager.checkPasswordStrength('Stronger'), 3);
+      expect(PasswordSecurityUtils.checkStrength('Stronger'), 3);
       // 'Str0nger' = 8 chars + lowercase + uppercase + digit = 4
-      expect(SecureDataManager.checkPasswordStrength('Str0nger'), 4);
+      expect(PasswordSecurityUtils.checkStrength('Str0nger'), 4);
       // 'Str0ng3r!' = 8 chars + lowercase + uppercase + digit + special = 5
-      expect(SecureDataManager.checkPasswordStrength('Str0ng3r!'), 5);
+      expect(PasswordSecurityUtils.checkStrength('Str0ng3r!'), 5);
     });
 
     test('Generate secure password creates valid password', () {
-      final password = SecureDataManager.generateSecurePassword(length: 20);
+      final password = PasswordSecurityUtils.generate(length: 20);
       expect(password.length, 20);
     });
   });

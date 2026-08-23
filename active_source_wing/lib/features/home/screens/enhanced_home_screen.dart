@@ -79,8 +79,8 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     // تهيئة الحركات
     _initializeAnimations();
 
-    // بدء المحرك العاطفي
-    _startEmotionalEngine();
+    // The initial state is neutral until the user provides an interaction or
+    // a real analysis service supplies an explainable result.
   }
 
   /// تهيئة مراقبة الأداء
@@ -249,15 +249,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     ).animate(_mainAnimationController);
 
     _mainAnimationController.forward();
-  }
-
-  void _startEmotionalEngine() {
-    // محاكاة تشغيل المحرك العاطفي
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        _updateEmotionalState(EmotionType.happy);
-      }
-    });
   }
 
   void _updateEmotionalState(EmotionType newEmotion) {
@@ -804,8 +795,12 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             subtitle: 'همسات من القلب',
             color: Colors.pink.shade300,
             onTap: () {
-              // Navigation simulation with premium feedback
-              _triggerHeartInteraction();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LoveMessageScreen(),
+                ),
+              );
             },
           ),
           const SizedBox(height: 15),

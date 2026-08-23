@@ -39,6 +39,16 @@ import 'features/home/widgets/cognitive_identity_widgets.dart';
 Future<void> main() async {
   // تهيئة Flutter
   WidgetsFlutterBinding.ensureInitialized();
+  ErrorWidget.builder = (_) => const ColoredBox(
+        color: Color(0xFF0F172A),
+        child: Center(
+          child: Text(
+            'تعذر عرض هذه الشاشة. يرجى إعادة المحاولة.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
 
   // تسجيل بداية التطبيق
   WingLogger.info('تطبيق جناح الحنين يبدأ التشغيل', tag: 'Main');
@@ -287,6 +297,7 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
   /// معالج تغيير المشاعر
   void _onEmotionChanged(EmotionType newEmotion) {
     if (_currentEmotion != newEmotion) {
+      final previousEmotion = _currentEmotion;
       setState(() {
         _currentEmotion = newEmotion;
         _currentTheme = _adaptationSystem.adaptThemeToEmotion(
@@ -299,7 +310,7 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
         'تم تحديث الثيم العاطفي',
         tag: 'EmotionalUI',
         data: {
-          'previous_emotion': _currentEmotion.toString(),
+          'previous_emotion': previousEmotion.toString(),
           'new_emotion': newEmotion.toString(),
         },
       );
@@ -398,7 +409,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
     super.initState();
-    _checkAuthentication();
+    _restoreAuthenticationState();
+  }
+
+  void _restoreAuthenticationState() {
+    final authService = context.read<AuthService>();
+    if (mounted) {
+      setState(() {
+        _isAuthenticated = authService.isAuthenticated;
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _checkAuthentication() async {
@@ -419,7 +440,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
         data: {'authenticated': isAuthenticated},
       );
 
-      // If we implement login screen later, we will use isAuthenticated here.
     } catch (e, stackTrace) {
       WingLogger.error(
         'فشل في فحص المصادقة',
@@ -494,13 +514,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
                 const Icon(Icons.lock_outline, size: 48),
                 const SizedBox(height: 16),
                 const Text(
-                  'تعذر التحقق من صلاحية الوصول. يرجى إعادة فتح التطبيق.',
+                  'هذه جلسة محلية خاصة بهذا الجهاز. افتح الجلسة للوصول إلى بياناتك.',
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                OutlinedButton(
+                ElevatedButton(
+                  key: const Key('open_session_button'),
                   onPressed: _checkAuthentication,
-                  child: const Text('إعادة المحاولة'),
+                  child: const Text('فتح الجلسة المحلية'),
                 ),
               ],
             ),

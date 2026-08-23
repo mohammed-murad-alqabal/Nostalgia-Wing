@@ -45,6 +45,7 @@ The project follows **Clean Architecture** principles to ensure scalability, tes
 
 - **Framework**: Flutter (Dart)
 - **State Management**: Provider
+- **Security**: AES-GCM authenticated encryption for new payloads, with keys stored through Flutter Secure Storage
 - **Local Persistence**: Hive (NoSQL)
 - **Audio**: `audioplayers`, `flutter_tts`
 
@@ -107,8 +108,9 @@ The project maintains high code quality standards with comprehensive test covera
 
 ## Security
 
-- **Local Data Encryption**: All sensitive data is encrypted locally using `SecureDataManager`.
-- **Privacy First**: No data is sent to external servers; everything operates locally or peer-to-peer (future).
+- **Local Data Encryption**: New sensitive payloads use the versioned AES-GCM path provided by `SecurityService` and `VersionedEncryptionService`; historical compatibility formats remain migration-only.
+- **Local Session Boundary**: The current release opens an explicit local session on the device. This is not an external identity provider or multi-user authentication system.
+- **Privacy First**: The current application is designed around local storage. Any future network or synchronization feature must be introduced with an explicit privacy review and integration tests.
 
 ## Contributing
 

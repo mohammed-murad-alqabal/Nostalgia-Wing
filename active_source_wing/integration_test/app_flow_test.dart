@@ -14,6 +14,11 @@ void main() {
       debugPrint('System: Initiating Cognitive Application (API 28)...');
       await app.main();
       await tester.pump();
+      final openSessionButton = find.byKey(const Key('open_session_button'));
+      if (openSessionButton.evaluate().isNotEmpty) {
+        await tester.tap(openSessionButton);
+        await tester.pump();
+      }
 
       // 2. Wait for UI to emerge
       debugPrint('System: Starting Deep UI Probe (30s Buffer)...');
@@ -110,6 +115,11 @@ void main() {
     testWidgets('Can navigate back from Lab', (tester) async {
       await app.main();
       await tester.pump();
+      final openSessionButton = find.byKey(const Key('open_session_button'));
+      if (openSessionButton.evaluate().isNotEmpty) {
+        await tester.tap(openSessionButton);
+        await tester.pump();
+      }
       await tester.pump(const Duration(seconds: 10));
 
       final labIcon = find.byIcon(Icons.science);
