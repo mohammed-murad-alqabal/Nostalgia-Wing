@@ -937,32 +937,38 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     required Color color,
     required VoidCallback onTap,
   }) =>
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(color: color.withValues(alpha: 0.5)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
+      Semantics(
+        button: true,
+        label: label,
+        child: Tooltip(
+          message: label,
+          child: GestureDetector(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: color.withValues(alpha: 0.5)),
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       );
-
   Widget _buildBottomNavigationBar() => Positioned(
         bottom: 0,
         left: 0,
@@ -990,32 +996,42 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final bool isActive = _selectedNavIndex == index;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedNavIndex = index;
-        });
-      },
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color:
-                isActive ? Colors.white : Colors.white.withValues(alpha: 0.6),
-            size: 24,
+    return Semantics(
+      button: true,
+      selected: isActive,
+      label: label,
+      child: Tooltip(
+        message: label,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _selectedNavIndex = index;
+            });
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: isActive
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.6),
+                size: 24,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isActive
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.6),
+                  fontSize: 12,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color:
-                  isActive ? Colors.white : Colors.white.withValues(alpha: 0.6),
-              fontSize: 12,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

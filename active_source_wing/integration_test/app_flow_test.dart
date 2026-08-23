@@ -72,6 +72,23 @@ void main() {
       debugPrint('System: Tapping Intelligence Lab trigger...');
       await tester.ensureVisible(trigger);
       await tester.pump();
+
+      // Accessibility contract: visible critical actions must be discoverable.
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics && widget.properties.label == 'مختبر الذكاء',
+        ),
+        findsWidgets,
+      );
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics && widget.properties.label == 'الرئيسية',
+        ),
+        findsOneWidget,
+      );
+
       await tester.tap(trigger);
 
       // Wait for screen transition and settle animations (Legacy Buffer)
