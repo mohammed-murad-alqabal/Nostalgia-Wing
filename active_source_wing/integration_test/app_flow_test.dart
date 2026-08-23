@@ -12,7 +12,8 @@ void main() {
         (tester) async {
       // 1. Start App
       debugPrint('System: Initiating Cognitive Application (API 28)...');
-      app.main();
+      await app.main();
+      await tester.pump();
 
       // 2. Wait for UI to emerge
       debugPrint('System: Starting Deep UI Probe (30s Buffer)...');
@@ -107,7 +108,8 @@ void main() {
 
   group('Navigation Verification', () {
     testWidgets('Can navigate back from Lab', (tester) async {
-      app.main();
+      await app.main();
+      await tester.pump();
       await tester.pump(const Duration(seconds: 10));
 
       final labIcon = find.byIcon(Icons.science);

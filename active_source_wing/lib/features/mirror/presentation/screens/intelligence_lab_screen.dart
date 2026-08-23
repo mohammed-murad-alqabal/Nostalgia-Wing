@@ -25,6 +25,7 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
   bool _isGovernanceActive = true;
   bool _isDocsActive = true;
   bool _isResonanceActive = true;
+  bool _isMaintenanceRunning = false;
 
   @override
   void initState() {
@@ -395,7 +396,7 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
         width: double.infinity,
         margin: const EdgeInsets.only(top: 20),
         child: ElevatedButton.icon(
-          onPressed: () => _handlePrivacyMaintenance(),
+          onPressed: _isMaintenanceRunning ? null : _handlePrivacyMaintenance,
           icon: const Icon(Icons.cleaning_services, color: Colors.white),
           label: const Text(
             'صيانة الخصوصية - Privacy Maintenance',
@@ -415,44 +416,62 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
         ),
       );
 
-  void _handlePrivacyMaintenance() {
-    showDialog(
+  Future<void> _handlePrivacyMaintenance() async {
+    if (_isMaintenanceRunning) return;
+
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title: const Text(
           'تأكيد صيانة البيانات وحماية الخصوصية',
           style: TextStyle(color: Colors.white),
         ),
         content: const Text(
-          'سيتم تحديث سجلات الخصوصية وتصفير البيانات بشكل آمن '
-          'لضمان استقرار النظام. هل تود الاستمرار؟',
+          'سيتم حذف البيانات الحساسة نهائياً، ولا يمكن التراجع عن العملية. '
+          'هل تود الاستمرار؟',
           style: TextStyle(color: Color(0xFF94A3B8)),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('إلغاء'),
           ),
           ElevatedButton(
-            onPressed: () async {
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-              Navigator.pop(context);
-              await SensoryFeedbackService.errorPulse();
-              await PrivacyMaintenanceService.maintenanceReset();
-              if (mounted) {
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(
-                      content: Text('تمت عملية صيانة الخصوصية بنجاح 🛡️')),
-                );
-              }
-            },
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('بدء الصيانة'),
           ),
         ],
       ),
     );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isMaintenanceRunning = true);
+    try {
+      await SensoryFeedbackService.errorPulse();
+      await PrivacyMaintenanceService.maintenanceReset();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تمت عملية صيانة الخصوصية بنجاح.')),
+      );
+    } catch (error, stackTrace) {
+      WingLogger.error(
+        'فشل تنفيذ صيانة الخصوصية من الواجهة',
+        tag: 'SecurityProtocol',
+        data: {'error_type': error.runtimeType.toString()},
+        stackTrace: stackTrace,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تعذر إكمال صيانة الخصوصية. لم تُعرض تفاصيل حساسة.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isMaintenanceRunning = false);
+    }
   }
 
   void _showGovernanceReport() {
