@@ -56,11 +56,16 @@ void main() {
 
       final maintenanceButton =
           find.text('صيانة الخصوصية - Privacy Maintenance');
+      final labScrollable = find.descendant(
+        of: labScrollView,
+        matching: find.byType(Scrollable),
+      );
       expect(labScrollView, findsOneWidget);
+      expect(labScrollable, findsOneWidget);
       await tester.scrollUntilVisible(
         maintenanceButton,
         500.0,
-        scrollable: labScrollView,
+        scrollable: labScrollable,
         maxScrolls: 30,
       );
       await tester.pump(const Duration(seconds: 2));
