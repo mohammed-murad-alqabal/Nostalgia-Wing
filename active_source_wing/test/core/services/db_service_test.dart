@@ -109,29 +109,47 @@ void main() {
       expect(mediaFile.existsSync(), isFalse);
     });
 
-    test('Should remove orphaned encrypted media without removing references',
+    test('Should remove multiple orphaned files and preserve references',
         () async {
       final secureMediaDir = Directory('${tempDir.path}/secure_media');
       await secureMediaDir.create();
       final referencedFile = File('${secureMediaDir.path}/referenced.enc');
+      final secondReferencedFile =
+          File('${secureMediaDir.path}/second-referenced.enc');
       final orphanedFile = File('${secureMediaDir.path}/orphaned.enc');
+      final secondOrphanedFile =
+          File('${secureMediaDir.path}/second-orphaned.enc');
       final unrelatedFile = File('${secureMediaDir.path}/keep.txt');
       referencedFile.writeAsStringSync('referenced');
+      secondReferencedFile.writeAsStringSync('referenced');
       orphanedFile.writeAsStringSync('orphaned');
+      secondOrphanedFile.writeAsStringSync('orphaned');
       unrelatedFile.writeAsStringSync('unrelated');
 
-      await dbService.insertMemory(
-        MemoriesCompanion.insert(
-          title: 'Referenced memory',
-          encryptedContent: 'Content',
-          mediaPath: drift.Value(referencedFile.path),
-          createdAt: drift.Value(DateTime.now()),
-        ),
-      );
+      for (final entry in [
+        (title: 'Referenced memory', file: referencedFile),
+        (title: 'Second referenced memory', file: secondReferencedFile),
+      ]) {
+        await dbService.insertMemory(
+          MemoriesCompanion.insert(
+            title: entry.title,
+            encryptedContent: 'Content',
+            mediaPath: drift.Value(entry.file.path),
+            createdAt: drift.Value(DateTime.now()),
+          ),
+        );
+      }
 
-      expect(await dbService.cleanupOrphanedMedia(), 1);
+      expect(await dbService.cleanupOrphanedMedia(), 2);
       expect(referencedFile.existsSync(), isTrue);
+      expect(secondReferencedFile.existsSync(), isTrue);
       expect(orphanedFile.existsSync(), isFalse);
+      expect(secondOrphanedFile.existsSync(), isFalse);
+      expect(unrelatedFile.existsSync(), isTrue);
+
+      expect(await dbService.cleanupOrphanedMedia(), 0);
+      expect(referencedFile.existsSync(), isTrue);
+      expect(secondReferencedFile.existsSync(), isTrue);
       expect(unrelatedFile.existsSync(), isTrue);
     });
   });

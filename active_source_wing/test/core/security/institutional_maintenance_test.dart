@@ -98,9 +98,7 @@ void main() {
             ),
           );
 
-      await PrivacyMaintenanceService.maintenanceReset(
-        auditStore: auditStore,
-      );
+      await PrivacyMaintenanceService.maintenanceReset(auditStore: auditStore);
 
       final audit = await auditStore.read();
       expect(audit, isNotNull);
@@ -123,8 +121,9 @@ void main() {
       expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
       expect(keyManager.wasCleared, isTrue);
 
-      final reopenedDatabase =
-          AppDatabase.forTesting(NativeDatabase(databaseFile));
+      final reopenedDatabase = AppDatabase.forTesting(
+        NativeDatabase(databaseFile),
+      );
       try {
         expect(
           await reopenedDatabase.select(reopenedDatabase.memories).get(),
@@ -147,6 +146,36 @@ void main() {
       }
     },
   );
+
+  test('privacy maintenance is idempotent after a successful reset', () async {
+    final secureMediaDir = Directory('${tempDir.path}/secure_media');
+    await secureMediaDir.create();
+    await File('${secureMediaDir.path}/repeat-reset.enc')
+        .writeAsString('ciphertext');
+    await database.into(database.memories).insert(
+          MemoriesCompanion.insert(
+            title: 'Repeat reset memory',
+            encryptedContent: 'Encrypted content',
+            createdAt: drift.Value(DateTime.now()),
+          ),
+        );
+
+    await PrivacyMaintenanceService.maintenanceReset(auditStore: auditStore);
+    final firstAudit = await auditStore.read();
+    expect(firstAudit?.status, PrivacyResetAuditStatus.succeeded);
+    expect(firstAudit?.finishedAt, isNotNull);
+
+    await PrivacyMaintenanceService.maintenanceReset(auditStore: auditStore);
+    final secondAudit = await auditStore.read();
+    expect(secondAudit?.status, PrivacyResetAuditStatus.succeeded);
+    expect(secondAudit?.startedAt.isAfter(firstAudit!.startedAt), isTrue);
+    expect(secondAudit?.finishedAt, isNotNull);
+    expect(secondAudit!.finishedAt!.isAfter(secondAudit.startedAt), isTrue);
+    expect(sl.isInitialized, isFalse);
+    expect(Hive.isBoxOpen(PsychologicalContextManager.boxName), isFalse);
+    expect(Hive.isBoxOpen(SafetyBoxService.boxName), isFalse);
+    expect(secureMediaDir.existsSync(), isFalse);
+  });
 
   test('privacy maintenance propagates a key invalidation failure', () async {
     sl.keyManager = _FailingKeyManager();
