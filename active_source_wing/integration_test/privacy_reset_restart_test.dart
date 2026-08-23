@@ -37,7 +37,11 @@ void main() {
           contextBox.get('integration_sentinel'), 'synthetic-sensitive-data');
       expect(mediaFile.existsSync(), isTrue);
 
-      final labEntry = find.text('مختبر الذكاء المعرفي').first;
+      final labTitle = find.text('مختبر الذكاء المعرفي').first;
+      final labEntry = find.ancestor(
+        of: labTitle,
+        matching: find.byType(InkWell),
+      );
       await tester.ensureVisible(labEntry);
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(labEntry);
