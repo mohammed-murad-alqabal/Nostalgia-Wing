@@ -105,12 +105,17 @@ The project maintains high code quality standards with comprehensive test covera
    ```bash
    flutter test test/performance/performance_security_test.dart
    ```
-- **Run Linux integration tests** (requires CMake, GTK, GStreamer, and Xvfb on CI hosts):
+- **Run Linux integration tests** (requires Flutter, CMake, GTK, GStreamer, and Xvfb on CI hosts):
    ```bash
    ./tool/run_linux_integration.sh
    ```
-   The script enables `NOSTALGIA_TEST_STORAGE_FALLBACK` only for the test process;
-   production builds never use the temporary storage fallback.
+- **Run the complete pre-release gate**:
+   ```bash
+   ./tool/verify_pre_release.sh
+   ```
+   The script combines the unified Flutter quality gate with Linux integration
+   acceptance. The `NOSTALGIA_TEST_STORAGE_FALLBACK` flag is limited to the
+   test process; production builds never use the temporary storage fallback.
 
 ## Security
 
