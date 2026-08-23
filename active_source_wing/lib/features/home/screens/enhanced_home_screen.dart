@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 
 import 'dart:math' as math;
 
 // Core imports
+import '../../../core/data/app_database.dart';
+import '../../../core/di/service_locator.dart';
+import '../../../core/infrastructure/wing_logger.dart';
+import '../../../core/services/db_service.dart';
 import '../../../core/psychology/emotional_state.dart';
 import '../../../core/performance/performance_monitor.dart';
 import '../../../core/performance/performance_adaptation_service.dart';
@@ -1043,9 +1048,8 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     );
   }
 
-  void _triggerSurprise() {
-    // محاكاة تفعيل المفاجأة
-    final surpriseMessages = [
+  Future<void> _triggerSurprise() async {
+    const surpriseMessages = [
       'لديك رسالة حب جديدة!',
       'تم إضافة ذكرى جميلة لألبومك!',
       'مفاجأة! لقد حصلت على هدية رقمية!',
@@ -1054,19 +1058,43 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     final randomMessage =
         surpriseMessages[math.Random().nextInt(surpriseMessages.length)];
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('مفاجأة! 🎉'),
-        content: Text(randomMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('شكراً لك'),
-          ),
-        ],
-      ),
-    );
+    try {
+      final dbService = context.read<DBService>();
+      final encryptedMessage =
+          await sl.encryptionService.encrypt(randomMessage);
+      await dbService.insertSurprise(
+        SurprisesCompanion.insert(
+          type: 'serendipity',
+          encryptedContent: encryptedMessage,
+        ),
+      );
+
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('مفاجأة!'),
+          content: const Text('تم حفظ مفاجأة جديدة في سجلك الخاص.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('شكراً لك'),
+            ),
+          ],
+        ),
+      );
+    } catch (error, stackTrace) {
+      WingLogger.error(
+        'فشل حفظ المفاجأة',
+        tag: 'Surprise',
+        data: {'error_type': error.runtimeType.toString()},
+        stackTrace: stackTrace,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر حفظ المفاجأة. حاول مرة أخرى.')),
+      );
+    }
   }
 
   void _analyzeEmotions() {
