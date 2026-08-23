@@ -72,34 +72,26 @@ void main() {
       await File('${secureMediaDir.path}/memory.enc')
           .writeAsString('ciphertext');
 
-      final memoryId = await database
-          .into(database.memories)
-          .insert(
+      final memoryId = await database.into(database.memories).insert(
             MemoriesCompanion.insert(
               title: 'Encrypted title',
               encryptedContent: 'Encrypted content',
               createdAt: drift.Value(DateTime.now()),
             ),
           );
-      await database
-          .into(database.reflections)
-          .insert(
+      await database.into(database.reflections).insert(
             ReflectionsCompanion.insert(
               memoryId: memoryId,
               aiInsight: 'Insight',
             ),
           );
-      await database
-          .into(database.sentMessages)
-          .insert(
+      await database.into(database.sentMessages).insert(
             SentMessagesCompanion.insert(
               encryptedContent: 'Encrypted message',
               type: 'morning',
             ),
           );
-      await database
-          .into(database.surprises)
-          .insert(
+      await database.into(database.surprises).insert(
             SurprisesCompanion.insert(
               encryptedContent: 'Encrypted surprise',
               type: 'growth',
@@ -160,9 +152,7 @@ void main() {
     await secureMediaDir.create();
     await File('${secureMediaDir.path}/repeat-reset.enc')
         .writeAsString('ciphertext');
-    await database
-        .into(database.memories)
-        .insert(
+    await database.into(database.memories).insert(
           MemoriesCompanion.insert(
             title: 'Repeat reset memory',
             encryptedContent: 'Encrypted content',
