@@ -1,83 +1,288 @@
 name: Release validation
 
+
+
 # Keep JavaScript-based actions on the supported Node 24 runtime.
+
 env:
+
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  
+
 
 on:
+
   workflow_dispatch:
+  
     inputs:
+    
       run_integration_tests:
+      
         description: Run Flutter integration tests before building the release artifact
+        
         required: true
+        
         default: true
+        
         type: boolean
+        
   push:
+  
     tags:
+    
       - "v*.*.*"
+      
+
 
 concurrency:
+
   group: release-validation-${{ github.ref }}
+  
   cancel-in-progress: false
+  
+
 
 permissions:
+
   contents: read
+  
+
 
 jobs:
+
   android_release:
+  
     name: Android release validation
+    
     runs-on: ubuntu-latest
+    
     defaults:
+    
       run:
+      
         working-directory: ./active_source_wing
+        
+
 
     steps:
+    
       - name: Checkout source
+      
         uses: actions/checkout@v5
+        
+
 
       - name: Set up Flutter
+      
         uses: subosito/flutter-action@v2
+        
         with:
+        
           flutter-version: 3.47.0
+          
           cache: true
+          
           pub-cache: true
+          
+
 
       - name: Show toolchain
+      
         run: |
+        
           flutter --version
+          
           dart --version
+          
+
 
       - name: Run unified quality gate
+      
         run: bash tool/verify_flutter.sh
+        
+
 
       - name: Enable KVM for Android emulator
+      
         if: github.event_name == 'push' || inputs.run_integration_tests
+        
         run: |
+        
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          
           sudo udevadm control --reload-rules
+          
           sudo udevadm trigger --name-match=kvm
+          
+
 
       - name: Run integration tests on Android emulator
+      
         if: github.event_name == 'push' || inputs.run_integration_tests
+        
         uses: reactivecircus/android-emulator-runner@v2
+        
         with:
+        
           api-level: 35
+          
           target: google_apis
+          
           arch: x86_64
+          
           profile: pixel_2
+          
           force-avd-creation: true
+          
           emulator-boot-timeout: 900
+          
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          
           disable-animations: true
-          script: cd active_source_wing && flutter test integration_test -d emulator-5554
+          
+          script: |
+          
+            set -o pipefail
+            
+            cd active_source_wing
+            
+            mkdir -p android-integration-diagnostics
+            
+            timeout --signal=TERM --kill-after=30s 10m \
+            
+              flutter test integration_test -d emulator-5554 --verbose 2>&1 \
+              
+              | tee android-integration-diagnostics/flutter-test.log
+              
+            test_status=${PIPESTATUS[0]}
+            
+            adb devices -l > android-integration-diagnostics/adb-devices.log 2>&1 || true
+            
+            adb shell dumpsys activity activities > android-integration-diagnostics/adb-activity.log 2>&1 || true
+            
+            adb logcat -d -t 300 > android-integration-diagnostics/adb-logcat.log 2>&1 || true
+            
+            exit "$test_status"
+            
+
+
+      - name: Upload Android integration diagnostics
+      
+        if: always() && (github.event_name == 'push' || inputs.run_integration_tests)
+        
+        uses: actions/upload-artifact@v6
+        
+        with:
+        
+          name: release-android-integration-diagnostics-${{ github.run_id }}
+          
+          path: active_source_wing/android-integration-diagnostics/
+          
+          if-no-files-found: warn
+          
+          retention-days: 7
+          
+
 
       - name: Build Android App Bundle
+      
         run: flutter build appbundle --release --no-pub
+        
+
 
       - name: Upload Android App Bundle
+      
         uses: actions/upload-artifact@v6
+        
         with:
+        
           name: nostalgia-wing-android-${{ github.ref_name || github.sha }}
+          
           path: active_source_wing/build/app/outputs/bundle/release/*.aab
+          
           if-no-files-found: error
+          
           retention-days: 14
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
