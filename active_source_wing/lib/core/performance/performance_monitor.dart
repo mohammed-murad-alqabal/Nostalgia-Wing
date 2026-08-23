@@ -95,10 +95,12 @@ class PerformanceMonitor {
     // A display cannot render faster than the target used by the app. Cap the
     // reported value so a short frame does not make the adaptive policy overly
     // optimistic.
-    _currentFrameRate = math.min(
-      targetFrameRate.toDouble(),
-      Duration.microsecondsPerSecond / averageMicros,
-    ).toDouble();
+    _currentFrameRate = math
+        .min(
+          targetFrameRate.toDouble(),
+          Duration.microsecondsPerSecond / averageMicros,
+        )
+        .toDouble();
     _updatePerformanceLevel();
   }
 

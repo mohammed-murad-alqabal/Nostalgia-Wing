@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+
 import '../../../../core/infrastructure/institutional_governance_manager.dart';
 import '../../../../core/infrastructure/living_documentation_system.dart';
 import '../../../../core/infrastructure/wing_logger.dart';
@@ -126,7 +127,7 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
                   colors: [
                     Color(0xFF38BDF8),
                     Color(0xFF0EA5E9),
-                    Colors.transparent
+                    Colors.transparent,
                   ],
                   stops: [0.2, 0.6, 1.0],
                 ),
@@ -138,11 +139,8 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.psychology,
-                size: 60,
-                color: Colors.white,
-              ),
+              child:
+                  const Icon(Icons.psychology, size: 60, color: Colors.white),
             ),
           ),
         ),
@@ -238,7 +236,7 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
                       color: color.withValues(alpha: 0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
-                    )
+                    ),
                   ]
                 : null,
           ),
@@ -250,9 +248,10 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
               Text(
                 arTitle,
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 enTitle,
@@ -292,8 +291,13 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
         ],
       );
 
-  Widget _buildReportTile(String arName, String enName, IconData icon,
-          Color color, VoidCallback onTap) =>
+  Widget _buildReportTile(
+    String arName,
+    String enName,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) =>
       Material(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(15),
@@ -302,14 +306,22 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
             child: Icon(icon, color: color),
           ),
-          title: Text(arName,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold)),
-          subtitle: Text(enName,
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+          title: Text(
+            arName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          subtitle: Text(
+            enName,
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+          ),
           trailing: const Icon(Icons.chevron_right, color: Color(0xFF94A3B8)),
         ),
       );
@@ -409,9 +421,8 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFF43F5E),
             padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           ),
         ),
       );
@@ -493,8 +504,10 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
         backgroundColor: const Color(0xFF1E293B),
         title: Text(title, style: const TextStyle(color: Colors.white)),
         content: SingleChildScrollView(
-          child: Text(data,
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+          child: Text(
+            data,
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+          ),
         ),
         actions: [
           TextButton(

@@ -3,7 +3,7 @@ import 'dart:math';
 /// Utilities for password policy checks and local password generation.
 ///
 /// This class deliberately contains no encryption implementation. Sensitive
-/// payloads must use [SecurityService] and [VersionedEncryptionService].
+/// payloads must use the authenticated encryption services in this package.
 class PasswordSecurityUtils {
   PasswordSecurityUtils._();
 

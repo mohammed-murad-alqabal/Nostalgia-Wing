@@ -439,7 +439,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
         tag: 'Auth',
         data: {'authenticated': isAuthenticated},
       );
-
     } catch (e, stackTrace) {
       WingLogger.error(
         'فشل في فحص المصادقة',
@@ -514,7 +513,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
                 const Icon(Icons.lock_outline, size: 48),
                 const SizedBox(height: 16),
                 const Text(
-                  'هذه جلسة محلية خاصة بهذا الجهاز. افتح الجلسة للوصول إلى بياناتك.',
+                  'هذه جلسة محلية خاصة بهذا الجهاز. '
+                  'افتح الجلسة للوصول إلى بياناتك.',
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),

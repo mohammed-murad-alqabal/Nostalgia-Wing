@@ -8,8 +8,9 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('End-to-End Cognitive Flow', () {
-    testWidgets('Verify Intelligence Lab and Privacy Maintenance Action',
-        (tester) async {
+    testWidgets('Verify Intelligence Lab and Privacy Maintenance Action', (
+      tester,
+    ) async {
       // 1. Start App
       debugPrint('System: Initiating Cognitive Application (API 28)...');
       await app.main();
@@ -29,8 +30,10 @@ void main() {
 
         // Search for trigger
         if (find.byIcon(Icons.science).evaluate().isNotEmpty) {
-          debugPrint('System: SUCCESS -> Intelligence Lab '
-              'trigger detected at attempt ${i + 1}');
+          debugPrint(
+            'System: SUCCESS -> Intelligence Lab '
+            'trigger detected at attempt ${i + 1}',
+          );
           found = true;
           break;
         }
@@ -51,8 +54,11 @@ void main() {
 
       if (!found) {
         debugPrint('CRITICAL: UI Probe failed. Finalizing diagnostic check...');
-        expect(found, isTrue,
-            reason: 'Failed to find main UI after 30 seconds.');
+        expect(
+          found,
+          isTrue,
+          reason: 'Failed to find main UI after 30 seconds.',
+        );
       }
 
       // 3. Find and Tap 'مختبر الذكاء'
@@ -73,8 +79,9 @@ void main() {
 
       // 5. Scroll to find components
       debugPrint('System: Scrolling to locate Privacy Maintenance Button...');
-      final maintenanceButtonFinder =
-          find.text('صيانة الخصوصية - Privacy Maintenance');
+      final maintenanceButtonFinder = find.text(
+        'صيانة الخصوصية - Privacy Maintenance',
+      );
 
       await tester.scrollUntilVisible(
         maintenanceButtonFinder,
@@ -88,8 +95,10 @@ void main() {
       debugPrint('System: Probing for complex charts...');
       final hasLineChart = find.byType(LineChart).evaluate().isNotEmpty;
       final hasBarChart = find.byType(BarChart).evaluate().isNotEmpty;
-      debugPrint('System: Chart Detection Status -> '
-          'Line: $hasLineChart, Bar: $hasBarChart');
+      debugPrint(
+        'System: Chart Detection Status -> '
+        'Line: $hasLineChart, Bar: $hasBarChart',
+      );
 
       // We don't fail here on legacy hardware if they take too long to render
       // as long as the main UI is present.
@@ -138,7 +147,8 @@ void main() {
           await tester.tap(backIcon.first);
         } else {
           debugPrint(
-              'Cognitive System: Standard Back Button not found, Pop...');
+            'Cognitive System: Standard Back Button not found, Pop...',
+          );
           await tester.pageBack();
         }
       }

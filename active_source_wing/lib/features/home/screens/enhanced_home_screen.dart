@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-import 'dart:async';
 import 'dart:math' as math;
 
 // Core imports
@@ -93,7 +92,8 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     if (mounted) {
       setState(() {
         _adaptAnimationsToPerformance(
-            _adaptationService.config.performanceLevel);
+          _adaptationService.config.performanceLevel,
+        );
       });
     }
   }
@@ -126,9 +126,11 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
       case PerformanceLevel.medium:
         // تقليل سرعة الحركات
         _heartbeatController.duration = Duration(
-            milliseconds: (1200 * (1 / config.animationSpeedFactor)).round());
-        _breathingController.duration =
-            Duration(seconds: (6 * (1 / config.animationSpeedFactor)).round());
+          milliseconds: (1200 * (1 / config.animationSpeedFactor)).round(),
+        );
+        _breathingController.duration = Duration(
+          seconds: (6 * (1 / config.animationSpeedFactor)).round(),
+        );
         break;
 
       case PerformanceLevel.low:
@@ -179,40 +181,30 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
       _memoryManager.registerResource(_animationResource);
 
       // حركة الظهور التدريجي
-      _fadeInAnimation = Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: _mainAnimationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-      ));
+      _fadeInAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _mainAnimationController,
+          curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+        ),
+      );
 
       // حركة الانزلاق
-      _slideAnimation = Tween<double>(
-        begin: 50.0,
-        end: 0.0,
-      ).animate(CurvedAnimation(
-        parent: _mainAnimationController,
-        curve: const Interval(0.3, 1.0, curve: Curves.elasticOut),
-      ));
+      _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
+        CurvedAnimation(
+          parent: _mainAnimationController,
+          curve: const Interval(0.3, 1.0, curve: Curves.elasticOut),
+        ),
+      );
 
       // حركة نبضات القلب
-      _heartbeatAnimation = Tween<double>(
-        begin: 1.0,
-        end: 1.2,
-      ).animate(CurvedAnimation(
-        parent: _heartbeatController,
-        curve: Curves.elasticOut,
-      ));
+      _heartbeatAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+        CurvedAnimation(parent: _heartbeatController, curve: Curves.elasticOut),
+      );
 
       // حركة التنفس
-      _breathingAnimation = Tween<double>(
-        begin: 0.95,
-        end: 1.05,
-      ).animate(CurvedAnimation(
-        parent: _breathingController,
-        curve: Curves.easeInOut,
-      ));
+      _breathingAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+        CurvedAnimation(parent: _breathingController, curve: Curves.easeInOut),
+      );
 
       // بدء الحركات
       _mainAnimationController.forward();
@@ -280,8 +272,9 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
       case EmotionType.hopeful:
         return 'غداً أجمل.. ويدي بيدك';
       default:
-        return _neutralGreetings[
-            math.Random().nextInt(_neutralGreetings.length)];
+        return _neutralGreetings[math.Random().nextInt(
+          _neutralGreetings.length,
+        )];
     }
   }
 
@@ -384,9 +377,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           _buildCognitiveBackground(),
 
           // المحتوى الرئيسي
-          SafeArea(
-            child: _buildAnimatedContent(),
-          ),
+          SafeArea(child: _buildAnimatedContent()),
 
           // شريط التنقل السفلي
           _buildBottomNavigationBar(),
@@ -420,9 +411,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
         // طبقة تعتيم إضافية للوضوح
         if (config.useBlur)
           Positioned.fill(
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.3),
-            ),
+            child: Container(color: Colors.black.withValues(alpha: 0.3)),
           ),
       ],
     );
@@ -567,32 +556,40 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildPerfOption('تلقائي (ديناميكي)', null,
-                          _adaptationService.useDynamic),
                       _buildPerfOption(
-                          'أداء عالي (جرافيك كامل)',
-                          PerformanceLevel.high,
-                          !_adaptationService.useDynamic &&
-                              _adaptationService.overrideLevel ==
-                                  PerformanceLevel.high),
+                        'تلقائي (ديناميكي)',
+                        null,
+                        _adaptationService.useDynamic,
+                      ),
                       _buildPerfOption(
-                          'متوازن',
-                          PerformanceLevel.medium,
-                          !_adaptationService.useDynamic &&
-                              _adaptationService.overrideLevel ==
-                                  PerformanceLevel.medium),
+                        'أداء عالي (جرافيك كامل)',
+                        PerformanceLevel.high,
+                        !_adaptationService.useDynamic &&
+                            _adaptationService.overrideLevel ==
+                                PerformanceLevel.high,
+                      ),
                       _buildPerfOption(
-                          'توفير طاقة (تبسيط)',
-                          PerformanceLevel.low,
-                          !_adaptationService.useDynamic &&
-                              _adaptationService.overrideLevel ==
-                                  PerformanceLevel.low),
+                        'متوازن',
+                        PerformanceLevel.medium,
+                        !_adaptationService.useDynamic &&
+                            _adaptationService.overrideLevel ==
+                                PerformanceLevel.medium,
+                      ),
+                      _buildPerfOption(
+                        'توفير طاقة (تبسيط)',
+                        PerformanceLevel.low,
+                        !_adaptationService.useDynamic &&
+                            _adaptationService.overrideLevel ==
+                                PerformanceLevel.low,
+                      ),
                       const SizedBox(height: 10),
                       TextButton(
                         onPressed: () =>
                             setState(() => _showPerformanceMenu = false),
-                        child: const Text('إغلاق',
-                            style: TextStyle(color: Colors.white70)),
+                        child: const Text(
+                          'إغلاق',
+                          style: TextStyle(color: Colors.white70),
+                        ),
                       ),
                     ],
                   ),
@@ -604,11 +601,18 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
       );
 
   Widget _buildPerfOption(
-          String title, PerformanceLevel? level, bool selected) =>
+    String title,
+    PerformanceLevel? level,
+    bool selected,
+  ) =>
       ListTile(
-        title: Text(title,
-            style: TextStyle(
-                color: selected ? Colors.amber : Colors.white, fontSize: 14)),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: selected ? Colors.amber : Colors.white,
+            fontSize: 14,
+          ),
+        ),
         trailing: selected
             ? const Icon(Icons.check_circle, color: Colors.amber, size: 20)
             : null,
@@ -701,17 +705,15 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             ),
             child: Text(
               _currentMessage,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -734,11 +736,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             shape: BoxShape.circle,
             color: _getEmotionalColor(_currentEmotion),
           ),
-          child: const Icon(
-            Icons.favorite,
-            size: 60,
-            color: Colors.white,
-          ),
+          child: const Icon(Icons.favorite, size: 60, color: Colors.white),
         ),
       );
     }
@@ -776,11 +774,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                     ]
                   : null,
             ),
-            child: const Icon(
-              Icons.favorite,
-              size: 60,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.favorite, size: 60, color: Colors.white),
           ),
         ),
       ),
@@ -798,7 +792,9 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const LoveMessageScreen(),
+                  builder: (context) => LoveMessageScreen(
+                    onClose: () => Navigator.of(context).pop(),
+                  ),
                 ),
               );
             },
@@ -851,9 +847,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
@@ -863,11 +857,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                   color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                child: Icon(icon, color: Colors.white, size: 24),
               ),
               const SizedBox(width: 15),
               Expanded(
@@ -949,9 +939,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(25),
-            border: Border.all(
-              color: color.withValues(alpha: 0.5),
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1049,9 +1037,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
         backgroundColor:
             _getEmotionalColor(randomEmotion).withValues(alpha: 0.9),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         duration: const Duration(seconds: 3),
       ),
     );

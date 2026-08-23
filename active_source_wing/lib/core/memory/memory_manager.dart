@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -139,8 +140,9 @@ class MemoryManager with WidgetsBindingObserver {
     // later lifecycle resume call target disposed controllers. The owning
     // widget performs the final cleanup from its dispose method.
     final unusedResources = _resources
-        .where((resource) =>
-            !resource.isActive && resource is! AnimationResource)
+        .where(
+          (resource) => !resource.isActive && resource is! AnimationResource,
+        )
         .toList();
     for (final resource in unusedResources) {
       resource.cleanup();
@@ -260,10 +262,7 @@ class MemoryStats {
 /// مورد حركة مُدار
 class AnimationResource implements MemoryManagedResource {
   /// Creates an [AnimationResource] for tracking controllers.
-  AnimationResource({
-    required this.name,
-    required this.controllers,
-  });
+  AnimationResource({required this.name, required this.controllers});
 
   @override
   final String name;
