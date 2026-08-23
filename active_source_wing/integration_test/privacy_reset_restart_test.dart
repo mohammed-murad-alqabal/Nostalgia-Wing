@@ -42,16 +42,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(labEntry);
 
-      final labTitle = find.text('مختبر الذكاء المعرفي');
+      final labScrollView = find.byType(CustomScrollView);
       await _pumpUntil(
         tester,
-        labTitle,
+        labScrollView,
         reason: 'The intelligence lab did not open on the device.',
       );
+      expect(find.text('Governance'), findsOneWidget);
 
       final maintenanceButton =
           find.text('صيانة الخصوصية - Privacy Maintenance');
-      final labScrollView = find.byType(CustomScrollView);
       expect(labScrollView, findsOneWidget);
       await tester.scrollUntilVisible(
         maintenanceButton,
