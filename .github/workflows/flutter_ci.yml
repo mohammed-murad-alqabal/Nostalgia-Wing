@@ -88,6 +88,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: |
+            bash -lc '
             set -o pipefail
             cd active_source_wing
             mkdir -p android-integration-diagnostics
@@ -104,6 +105,7 @@ jobs:
             adb shell dumpsys activity activities > android-integration-diagnostics/adb-activity.log 2>&1 || true
             adb logcat -d -t 300 > android-integration-diagnostics/adb-logcat.log 2>&1 || true
             exit "$test_status"
+            '
 
       - name: Upload Android integration diagnostics
         if: always()
