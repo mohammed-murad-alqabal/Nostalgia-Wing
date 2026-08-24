@@ -107,7 +107,7 @@ The project maintains high code quality standards with comprehensive test covera
 
 ## Security
 
-- **Local Data Encryption**: All sensitive data is encrypted locally using `SecureDataManager`.
+- **Local Data Encryption**: New sensitive data uses the authenticated `SecurityService`/`VersionedEncryptionService` path. Historical `SafetyBoxService` data is compatibility-only and is not an approved format for new writes.
 - **Privacy First**: No data is sent to external servers; everything operates locally or peer-to-peer (future).
 
 ## Contributing
