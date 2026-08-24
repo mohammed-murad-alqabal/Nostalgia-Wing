@@ -1,8 +1,8 @@
 > **Status:** Current
 > **Owner:** فريق تطوير مشروع جناح الحنين
 > **Authority:** `AuthService` و`DBService` ومسار `AuthWrapper` في `main.dart`
-> **Last verified:** 2026-08-18
-> **Verified commit:** PR #17 branch under review
+> **Last verified:** 24 أغسطس 2026
+> **Verified commit:** `db0bf42ad2e95aed5bad357a1ee74118b06cc30d`
 > **Related code:** `active_source_wing/lib/core/services/auth_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/main.dart`
 > **Related tests:** `active_source_wing/test/core/services/auth_service_test.dart`, `active_source_wing/test/integration/services_integration_test.dart`, `active_source_wing/test/core/security/institutional_maintenance_test.dart`
 

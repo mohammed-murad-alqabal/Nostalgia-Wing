@@ -3,8 +3,8 @@
 > **Status:** Partial
 > **Owner:** فريق تطوير مشروع جناح الحنين
 > **Authority:** عقد الخصوصية المحلي، `PrivacyMaintenanceService`، و`AppDatabase` عند schema version 3
-> **Last verified:** 2026-08-19
-> **Verified commit:** `fix/android-privacy-reset-integration-v2` branch under review; platform evidence is pending
+> **Last verified:** 24 أغسطس 2026
+> **Verified commit:** `db0bf42ad2e95aed5bad357a1ee74118b06cc30d`
 > **Related code:** `active_source_wing/lib/core/security/privacy_maintenance_service.dart`, `active_source_wing/lib/core/security/privacy_reset_audit_store.dart`, `active_source_wing/lib/core/security/security_service.dart`, `active_source_wing/lib/core/security/key_manager.dart`, `active_source_wing/lib/core/security/versioned_encryption_service.dart`, `active_source_wing/lib/core/security/decryption_observer.dart`,
 > `active_source_wing/lib/core/services/secure_media_cleanup_service.dart`, `active_source_wing/lib/core/services/db_service.dart`, `active_source_wing/lib/core/data/app_database.dart`
 > **Related tests:** `active_source_wing/test/core/security/institutional_maintenance_test.dart`, `active_source_wing/test/core/security/security_service_test.dart`, `active_source_wing/test/core/security/versioned_encryption_service_test.dart`,
@@ -79,7 +79,10 @@ The Android integration test launches the real application, writes synthetic rec
 
 The test is deliberately platform-scoped because it exercises `path_provider`, Hive, Flutter Secure Storage, the application entrypoint, and an Android emulator. It is not included in the local unit-test command and must run in the dedicated `platform-integration` GitHub Actions job. Test data is synthetic and must never include a real key, memory, media file, or production account.
 
-Local verification is intentionally limited to Dart formatting and repository diff checks in the current sandbox. Flutter analysis, widget/integration execution, and build verification remain authoritative only through the repository's GitHub Actions gates; this suite does not claim local Flutter success.
+The release workflow now targets this privacy-reset integration test explicitly; the next successful Android CI run is still required before treating the platform evidence as complete.
+
+Local verification is intentionally limited to Dart formatting and repository diff checks in the current sandbox.
+Flutter analysis, widget/integration execution, and build verification remain authoritative only through the repository's GitHub Actions gates; this suite does not claim local Flutter success.
 
 ## Verification boundary
 

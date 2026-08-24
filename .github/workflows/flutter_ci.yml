@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Run documentation-governance regression tests
         run: python3 test_verify_documentation_governance.py
       - name: Verify documentation governance

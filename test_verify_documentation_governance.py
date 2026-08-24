@@ -19,7 +19,7 @@ VALID_METADATA = """> **Status:** Current
 > **Owner:** Engineering
 > **Authority:** Repository maintainers
 > **Last verified:** 2026-08-17
-> **Verified commit:** test-fixture
+> **Verified commit:** `1234567`
 > **Related code:** scripts/verify_documentation_governance.py
 > **Related tests:** test_verify_documentation_governance.py
 
@@ -41,6 +41,26 @@ class DocumentationGovernanceTests(unittest.TestCase):
                 self.assertEqual(GOVERNANCE.metadata_errors(source), [])
             finally:
                 GOVERNANCE.ROOT = previous_root
+
+    def test_invalid_verified_commit_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "docs" / "current" / "source.md"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                VALID_METADATA.replace("`1234567`", "main branch under review"),
+                encoding="utf-8",
+            )
+
+            previous_root = GOVERNANCE.ROOT
+            try:
+                GOVERNANCE.ROOT = root
+                errors = GOVERNANCE.metadata_errors(source)
+            finally:
+                GOVERNANCE.ROOT = previous_root
+
+            self.assertEqual(len(errors), 1)
+            self.assertIn("Verified commit must be a concrete Git SHA", errors[0])
 
     def test_missing_metadata_field_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
