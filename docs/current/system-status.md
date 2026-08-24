@@ -8,9 +8,9 @@
 > 
 > **Authority:** Code + Dependencies + Tests
 > 
-> **Last verified:** 13 أغسطس 2026
+> **Last verified:** 24 أغسطس 2026
 > 
-> **Verified commit:** `868efdf`
+> **Verified commit:** `db0bf42ad2e95aed5bad357a1ee74118b06cc30d`
 > 
 > **Related code:** `active_source_wing/lib/`, `active_source_wing/pubspec.yaml`
 > 
