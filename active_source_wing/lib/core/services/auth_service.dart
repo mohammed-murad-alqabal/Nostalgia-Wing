@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../infrastructure/wing_logger.dart';
 
 /// Thrown when a protected local operation is attempted without a session.
@@ -15,7 +17,7 @@ class AuthenticationRequiredException implements Exception {
 /// This service currently establishes an in-memory local session. It does not
 /// claim to verify an external identity; a future identity provider can be
 /// added behind this contract without weakening the storage boundary.
-class AuthService {
+class AuthService extends ChangeNotifier {
   AuthService._();
   static AuthService? _instance;
 
@@ -24,6 +26,7 @@ class AuthService {
 
   bool _isInitialized = false;
   bool _isAuthenticated = false;
+  bool _isDisposed = false;
 
   /// Initializes the auth service.
   Future<void> initialize() async {
@@ -46,6 +49,7 @@ class AuthService {
     try {
       await initialize();
       _isAuthenticated = true;
+      _notifyIfActive();
       WingLogger.info('Local authentication session opened', tag: 'Auth');
       return true;
     } catch (e) {
@@ -67,13 +71,21 @@ class AuthService {
   /// Logs out the user and invalidates the local session.
   Future<void> logout() async {
     _isAuthenticated = false;
+    _notifyIfActive();
     WingLogger.info('Local authentication session closed', tag: 'Auth');
   }
 
+  void _notifyIfActive() {
+    if (!_isDisposed) notifyListeners();
+  }
+
   /// Disposes resources.
+  @override
   void dispose() {
     _isAuthenticated = false;
     _isInitialized = false;
+    _isDisposed = true;
     _instance = null;
+    super.dispose();
   }
 }

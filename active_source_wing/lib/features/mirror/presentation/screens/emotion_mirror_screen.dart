@@ -8,18 +8,111 @@ import '../../../../core/psychology/emotional_state.dart';
 /// A visual "Mirror" that reflects the user's emotional state.
 ///
 /// Provides dynamic theme adaptation and relational insights.
-class EmotionMirrorScreen extends StatelessWidget {
+class EmotionMirrorScreen extends StatefulWidget {
   /// Creates an [EmotionMirrorScreen].
   const EmotionMirrorScreen({super.key});
 
   @override
+  State<EmotionMirrorScreen> createState() => _EmotionMirrorScreenState();
+}
+
+class _EmotionMirrorScreenState extends State<EmotionMirrorScreen> {
+  Future<RelationalReport>? _reportFuture;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_reportFuture == null) {
+      final contextManager = context.read<PsychologicalContextManager>();
+      final analyticsService = context.read<RelationalAnalyticsService>();
+      _reportFuture =
+          analyticsService.analyzeRelationalHealth(contextManager.interactions);
+    }
+  }
+
+  Future<void> _openCheckIn() async {
+    final selectedEmotion = await showModalBottomSheet<EmotionType>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: EmotionType.values
+              .map(
+                (emotion) => ListTile(
+                  leading: Icon(_getEmotionIcon(emotion)),
+                  title: Text(_getEmotionArabicName(emotion)),
+                  onTap: () => Navigator.pop(sheetContext, emotion),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+    if (selectedEmotion == null || !mounted) return;
+
+    final controller = TextEditingController();
+    final note = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('كيف تشعر؟ — ${_getEmotionArabicName(selectedEmotion)}'),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          textDirection: TextDirection.rtl,
+          decoration: const InputDecoration(
+            hintText: 'اكتب انعكاساً اختيارياً...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: const Text('تسجيل'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (!mounted || note == null) return;
+
+    try {
+      final contextManager = context.read<PsychologicalContextManager>();
+      await contextManager.trackInteraction(
+        text: note.trim().isEmpty ? 'تسجيل شعور من مرآة المشاعر' : note.trim(),
+        type: selectedEmotion,
+        metadata: {
+          'interaction_type': 'emotion_check_in',
+          'content_type': 'reflection',
+        },
+      );
+      if (!mounted) return;
+      final analyticsService = context.read<RelationalAnalyticsService>();
+      setState(() {
+        _reportFuture = analyticsService
+            .analyzeRelationalHealth(contextManager.interactions);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تسجيل شعورك وتحديث المرآة.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر تسجيل الشعور حالياً.')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final contextManager = Provider.of<PsychologicalContextManager>(context);
-    final analyticsService = Provider.of<RelationalAnalyticsService>(context);
-    final adaptationSystem = Provider.of<EmotionalAdaptationSystem>(context);
+    final contextManager = context.watch<PsychologicalContextManager>();
+    final adaptationSystem = context.watch<EmotionalAdaptationSystem>();
+    final analyticsService = context.read<RelationalAnalyticsService>();
 
     return FutureBuilder<RelationalReport>(
-      future:
+      future: _reportFuture ??
           analyticsService.analyzeRelationalHealth(contextManager.interactions),
       builder: (context, snapshot) {
         final currentEmotion = contextManager.getDominantEmotion();
@@ -92,6 +185,12 @@ class EmotionMirrorScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+            IconButton(
+              tooltip: 'تسجيل شعور',
+              onPressed: _openCheckIn,
+              icon:
+                  Icon(Icons.add_reaction_outlined, color: config.primaryColor),
             ),
             Container(
               padding: const EdgeInsets.all(12),

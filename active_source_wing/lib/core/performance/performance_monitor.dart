@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
 
 /// نظام مراقبة الأداء - Performance Monitoring System
 /// يراقب استخدام الذاكرة وأداء الحركات والإطارات
@@ -39,14 +40,20 @@ class PerformanceMonitor {
   static const int maxStartupTimeMs = 2000;
 
   bool _isMonitoring = false;
+  bool _timingsCallbackRegistered = false;
   int _currentMemoryUsageMB = 0;
-  final double _currentFrameRate = 60.0;
+  double _currentFrameRate = 0.0;
+  bool _hasFrameSample = false;
 
   /// بدء مراقبة الأداء
   void startMonitoring() {
     if (_isMonitoring) return;
 
     _isMonitoring = true;
+    if (!_timingsCallbackRegistered) {
+      SchedulerBinding.instance.addTimingsCallback(_handleFrameTimings);
+      _timingsCallbackRegistered = true;
+    }
     _startMemoryMonitoring();
 
     if (kDebugMode) {
@@ -57,11 +64,29 @@ class PerformanceMonitor {
   /// إيقاف مراقبة الأداء
   void stopMonitoring() {
     _isMonitoring = false;
+    if (_timingsCallbackRegistered) {
+      SchedulerBinding.instance.removeTimingsCallback(_handleFrameTimings);
+      _timingsCallbackRegistered = false;
+    }
     _memoryMonitorTimer?.cancel();
 
     if (kDebugMode) {
       print('🔍 Performance Monitor: Stopped monitoring');
     }
+  }
+
+  void _handleFrameTimings(List<FrameTiming> timings) {
+    if (timings.isEmpty) return;
+    final totalMicros = timings.fold<int>(
+      0,
+      (sum, timing) => sum + timing.totalSpan.inMicroseconds,
+    );
+    final averageMicros = totalMicros / timings.length;
+    if (averageMicros <= 0) return;
+
+    _currentFrameRate = (1000000 / averageMicros).clamp(0.0, 60.0).toDouble();
+    _hasFrameSample = true;
+    _updatePerformanceLevel();
   }
 
   /// بدء مؤقت الأداء
@@ -86,7 +111,7 @@ class PerformanceMonitor {
       duration: durationMs,
       timestamp: DateTime.now(),
       memoryUsage: _currentMemoryUsageMB,
-      frameRate: _currentFrameRate,
+      frameRate: _hasFrameSample ? _currentFrameRate : 0.0,
     );
 
     _metrics.add(metric);
@@ -194,7 +219,7 @@ class PerformanceMonitor {
       recentMetrics: recentMetrics.length,
       averageResponseTime: _calculateAverageResponseTime(recentMetrics),
       currentMemoryUsage: _currentMemoryUsageMB,
-      currentFrameRate: _currentFrameRate,
+      currentFrameRate: _hasFrameSample ? _currentFrameRate : 0.0,
       isPerformanceGood: _isPerformanceGood(),
     );
   }
@@ -214,7 +239,7 @@ class PerformanceMonitor {
   /// فحص حالة الأداء
   bool _isPerformanceGood() =>
       _currentMemoryUsageMB < maxMemoryUsageMB &&
-      _currentFrameRate > (targetFrameRate * 0.8);
+      (!_hasFrameSample || _currentFrameRate > (targetFrameRate * 0.8));
 
   /// الحصول على مستوى الأداء المقترح
   PerformanceLevel getRecommendedPerformanceLevel() {

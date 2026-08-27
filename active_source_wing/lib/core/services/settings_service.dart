@@ -15,10 +15,37 @@ class SettingsService {
   // Keys
   static const String _keyPerformanceOverride = 'perf_adaptation_override';
   static const String _keyUseDynamicAdaptation = 'perf_use_dynamic';
+  static const String _keyDisplayName = 'display_name';
+  static const String _keyPartnerName = 'partner_name';
+  static const String _keyAnimationsEnabled = 'animations_enabled';
 
   /// تهيئة الخدمة
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+  }
+
+  /// الاسم المعرفي المحفوظ محلياً.
+  String get displayName => _prefs.getString(_keyDisplayName) ?? '';
+
+  /// اسم الشريك المحفوظ محلياً.
+  String get partnerName => _prefs.getString(_keyPartnerName) ?? '';
+
+  /// هل المؤثرات الحركية مفعلة؟
+  bool get animationsEnabled => _prefs.getBool(_keyAnimationsEnabled) ?? true;
+
+  /// حفظ الاسم المعرفي.
+  Future<void> setDisplayName(String value) async {
+    await _prefs.setString(_keyDisplayName, value.trim());
+  }
+
+  /// حفظ اسم الشريك.
+  Future<void> setPartnerName(String value) async {
+    await _prefs.setString(_keyPartnerName, value.trim());
+  }
+
+  /// تفعيل أو إيقاف المؤثرات الحركية.
+  Future<void> setAnimationsEnabled(bool value) async {
+    await _prefs.setBool(_keyAnimationsEnabled, value);
   }
 
   /// هل نستخدم التكيف الديناميكي؟

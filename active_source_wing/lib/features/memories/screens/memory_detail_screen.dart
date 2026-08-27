@@ -35,7 +35,17 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
   void initState() {
     super.initState();
     _currentMemory = widget.memory;
+    _recordView();
     _decryptContent();
+  }
+
+  Future<void> _recordView() async {
+    try {
+      final dbService = Provider.of<DBService>(context, listen: false);
+      await dbService.incrementMemoryViewCount(_currentMemory.id);
+    } catch (_) {
+      // Viewing remains available even if analytics cannot be updated.
+    }
   }
 
   Future<void> _decryptContent() async {
@@ -68,7 +78,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
       if (mounted) {
         setState(() {
           _decryptedTitle = 'خطأ في التشفير';
-          _decryptedDescription = 'لا يمكن عرض المحتوى: $e';
+          _decryptedDescription =
+              'تعذر فك محتوى هذه الذكرى. قد تكون البيانات تالفة '
+              'أو المفتاح غير متاح.';
           _isLoading = false;
         });
       }
@@ -76,9 +88,16 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
   }
 
   Future<void> _deleteMemory() async {
-    final dbService = Provider.of<DBService>(context, listen: false);
-    await dbService.deleteMemory(_currentMemory.id);
-    widget.onClose();
+    try {
+      final dbService = Provider.of<DBService>(context, listen: false);
+      await dbService.deleteMemory(_currentMemory.id);
+      if (mounted) widget.onClose();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر حذف الذكرى حالياً.')),
+      );
+    }
   }
 
   @override
@@ -109,9 +128,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
                           onPressed: () => Navigator.pop(context),
                           child: const Text('تراجع')),
                       TextButton(
-                          onPressed: () {
+                          onPressed: () async {
                             Navigator.pop(context);
-                            _deleteMemory();
+                            await _deleteMemory();
                           },
                           child: const Text('حذف',
                               style: TextStyle(color: Colors.redAccent))),
@@ -191,7 +210,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
                       textAlign: TextAlign.right,
                     ),
                     const SizedBox(height: 48),
-                    // Spiritual Insight Placeholder (رفيق الروح)
+                    // إرشاد ثابت عام، وليس نتيجة تحليل آلي لهذه الذكرى.
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(

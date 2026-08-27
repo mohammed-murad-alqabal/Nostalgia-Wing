@@ -22,6 +22,8 @@ class _SurpriseScreenState extends State<SurpriseScreen> {
   late DBService _dbService;
 
   bool _isLoading = true;
+  bool _isUpdating = false;
+  String? _errorMessage;
   List<Map<String, dynamic>> _surprises = [];
 
   @override
@@ -32,34 +34,60 @@ class _SurpriseScreenState extends State<SurpriseScreen> {
   }
 
   Future<void> _loadSurprises() async {
-    setState(() => _isLoading = true);
-    final rawSurprises = await _dbService.getSurprises();
-    final decodedList = <Map<String, dynamic>>[];
-    for (final s in rawSurprises) {
-      try {
-        final content = await sl.encryptionService.decrypt(s.encryptedContent);
-        decodedList.add({
-          'id': s.id,
-          'type': s.type,
-          'content': content,
-          'status': s.status,
-          'createdAt': s.createdAt,
-        });
-      } catch (e) {
-        // Skip un-decryptable content
-      }
-    }
-
+    if (!mounted) return;
     setState(() {
-      _surprises = decodedList.reversed.toList(); // Newest first
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+    try {
+      final rawSurprises = await _dbService.getSurprises();
+      final decodedList = <Map<String, dynamic>>[];
+      for (final s in rawSurprises) {
+        try {
+          final content =
+              await sl.encryptionService.decrypt(s.encryptedContent);
+          decodedList.add({
+            'id': s.id,
+            'type': s.type,
+            'content': content,
+            'status': s.status,
+            'createdAt': s.createdAt,
+          });
+        } catch (_) {
+          // Hide damaged records without exposing their content.
+          // Maintenance tools can still inspect the record.
+        }
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _surprises = decodedList.reversed.toList();
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'تعذر تحميل المفاجآت حالياً.';
+      });
+    }
   }
 
   Future<void> _handleAction(int id, String newStatus) async {
+    if (_isUpdating) return;
     SensoryFeedbackService.selectionClick();
-    await _dbService.updateSurpriseStatus(id, newStatus);
-    _loadSurprises();
+    setState(() => _isUpdating = true);
+    try {
+      await _dbService.updateSurpriseStatus(id, newStatus);
+      await _loadSurprises();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر تحديث حالة المفاجأة.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
   }
 
   @override
@@ -81,9 +109,11 @@ class _SurpriseScreenState extends State<SurpriseScreen> {
                 Flexible(
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : _surprises.isEmpty
-                          ? _buildEmptyState()
-                          : _buildSurpriseList(),
+                      : _errorMessage != null
+                          ? _buildErrorState()
+                          : _surprises.isEmpty
+                              ? _buildEmptyState()
+                              : _buildSurpriseList(),
                 ),
               ],
             ),
@@ -112,6 +142,22 @@ class _SurpriseScreenState extends State<SurpriseScreen> {
             onPressed: widget.onClose,
           ),
         ],
+      );
+
+  Widget _buildErrorState() => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Column(
+          children: [
+            const Icon(Icons.error_outline, size: 60, color: Colors.redAccent),
+            const SizedBox(height: 16),
+            Text(_errorMessage!, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: _loadSurprises,
+              child: const Text('إعادة المحاولة'),
+            ),
+          ],
+        ),
       );
 
   Widget _buildEmptyState() => const Padding(

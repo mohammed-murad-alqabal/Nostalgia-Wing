@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:flutter/foundation.dart';
 import '../models/interaction_models.dart';
 import '../psychology/emotional_state.dart';
 import '../infrastructure/wing_logger.dart';
@@ -7,7 +8,7 @@ import '../infrastructure/wing_logger.dart';
 ///
 /// Manages the psychological context and relational memory of the system.
 /// Tracks emotional density, conflict nodes, and interaction patterns.
-class PsychologicalContextManager {
+class PsychologicalContextManager extends ChangeNotifier {
   /// The Hive box name for psychological context.
   static const String boxName = 'psychological_context';
 
@@ -67,6 +68,7 @@ class PsychologicalContextManager {
 
     await _box.put('emotional_density', currentDensity);
     await _box.put('last_emotion_time', DateTime.now().toIso8601String());
+    notifyListeners();
   }
 
   /// Gets the current emotional density (Presence Density).

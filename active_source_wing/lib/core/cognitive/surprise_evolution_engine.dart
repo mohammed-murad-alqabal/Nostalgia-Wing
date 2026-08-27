@@ -51,15 +51,21 @@ class SurpriseEvolutionEngine {
 
     String surpriseMessage;
     if (memories.isNotEmpty) {
-      final Memory randomMemory =
+      final Memory selectedMemory =
           memories[DateTime.now().second % memories.length];
-      surpriseMessage = 'أتذكر ${randomMemory.title}؟ كانت لحظة رائعة!\n'
+      String memoryTitle;
+      try {
+        memoryTitle = await sl.encryptionService.decrypt(selectedMemory.title);
+      } catch (_) {
+        memoryTitle = 'ذكرياتكما المحفوظة';
+      }
+      surpriseMessage = 'أتذكر $memoryTitle؟ كانت لحظة رائعة!\n'
           'تذكرت هذه اللحظة الجميلة وأردت أن أشاركها معكِ.';
     } else {
       surpriseMessage = 'لدي شعور بأن يومكِ سيكون مليئًا بالبهجة اليوم!';
     }
 
-    _notificationService.showNotification(
+    await _notificationService.showNotification(
       title: 'مفاجأة من جناح الحنين!',
       body: surpriseMessage,
       payload: 'surprise_message',
@@ -90,7 +96,7 @@ class SurpriseEvolutionEngine {
           growthSuggestions[DateTime.now().second % growthSuggestions.length];
     }
 
-    _notificationService.showNotification(
+    await _notificationService.showNotification(
       title: 'فرصة للنمو معًا',
       body: suggestion,
       payload: 'growth_suggestion',
@@ -120,7 +126,7 @@ class SurpriseEvolutionEngine {
           DateTime.now().second % microTransformations.length];
     }
 
-    _notificationService.showNotification(
+    await _notificationService.showNotification(
       title: 'تحول صغير، تأثير كبير',
       body: transformation,
       payload: 'micro_transformation',

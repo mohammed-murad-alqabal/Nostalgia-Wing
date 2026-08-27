@@ -32,7 +32,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+    if (image != null && mounted) {
       setState(() {
         _imageFile = File(image.path);
       });
@@ -49,6 +49,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
     }
 
     setState(() => _isSaving = true);
+    String? savedFilePath;
 
     try {
       final dbService = Provider.of<DBService>(context, listen: false);
@@ -73,6 +74,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
 
       final fileName = '${const Uuid().v4()}.enc';
       final filePath = p.join(secureMediaDir.path, fileName);
+      savedFilePath = filePath;
       await File(filePath).writeAsBytes(encryptedBytes);
 
       // 3. Save to DB
@@ -87,9 +89,18 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
+      if (savedFilePath != null) {
+        try {
+          final partialFile = File(savedFilePath);
+          if (partialFile.existsSync()) partialFile.deleteSync();
+        } catch (_) {
+          // Keep the original error safe for the user; cleanup is best effort.
+        }
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('فشل حفظ الذكرى: $e')),
+          const SnackBar(
+              content: Text('تعذر حفظ الذكرى حالياً. حاول مرة أخرى.')),
         );
       }
     } finally {
@@ -97,6 +108,13 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
         setState(() => _isSaving = false);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 
   @override

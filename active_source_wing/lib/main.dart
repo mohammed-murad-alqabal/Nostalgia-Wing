@@ -32,6 +32,8 @@ import 'core/services/emotional_message_service.dart';
 
 // Screens
 import 'features/home/screens/home_screen.dart';
+import 'features/home/screens/surprise_screen.dart';
+import 'features/messages/screens/love_message_screen.dart';
 import 'features/home/widgets/cognitive_identity_widgets.dart';
 
 /// التطبيق الرئيسي - جناح الحنين
@@ -125,6 +127,7 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
 
   EmotionType _currentEmotion = EmotionType.neutral;
   ThemeData _currentTheme = ThemeData.light();
+  final _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -140,7 +143,39 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
       ThemeData.light(),
     );
 
+    widget.notificationService.onNotificationTap = _handleNotificationTap;
     WingLogger.info('تم تهيئة النظام النفسي المتقدم', tag: 'PsychSystem');
+  }
+
+  @override
+  void dispose() {
+    widget.notificationService.onNotificationTap = null;
+    super.dispose();
+  }
+
+  void _handleNotificationTap(String? payload) {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    if (payload == 'love_whisper') {
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => LoveMessageScreen(
+            onClose: () => navigator.pop(),
+          ),
+        ),
+      );
+    } else if (payload == 'surprise_message' ||
+        payload == 'growth_suggestion' ||
+        payload == 'micro_transformation') {
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => SurpriseScreen(
+            onClose: () => navigator.pop(),
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -151,7 +186,8 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
           Provider<AudioService>.value(value: AudioService.instance),
           Provider<NotificationService>.value(
               value: widget.notificationService),
-          Provider<AuthService>.value(value: AuthService.instance),
+          ChangeNotifierProvider<AuthService>.value(
+              value: AuthService.instance),
           Provider<EmotionalMessageService>.value(
             value: widget.emotionalMessageService,
           ),
@@ -170,7 +206,7 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
           ),
 
           // Psychological Context Manager
-          Provider<PsychologicalContextManager>.value(
+          ChangeNotifierProvider<PsychologicalContextManager>.value(
               value: widget.contextManager),
 
           // Cognitive Modules - Provided as singletons
@@ -262,6 +298,7 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
           ),
         ],
         child: MaterialApp(
+          navigatorKey: _navigatorKey,
           title: 'جناح الحنين',
           debugShowCheckedModeBanner: false,
 
@@ -286,7 +323,8 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
 
   /// معالج تغيير المشاعر
   void _onEmotionChanged(EmotionType newEmotion) {
-    if (_currentEmotion != newEmotion) {
+    final previousEmotion = _currentEmotion;
+    if (previousEmotion != newEmotion) {
       setState(() {
         _currentEmotion = newEmotion;
         _currentTheme = _adaptationSystem.adaptThemeToEmotion(
@@ -299,7 +337,7 @@ class _WingOfNostalgiaAppState extends State<WingOfNostalgiaApp> {
         'تم تحديث الثيم العاطفي',
         tag: 'EmotionalUI',
         data: {
-          'previous_emotion': _currentEmotion.toString(),
+          'previous_emotion': previousEmotion.toString(),
           'new_emotion': newEmotion.toString(),
         },
       );
@@ -332,7 +370,7 @@ class AdaptiveUISystem extends StatefulWidget {
 }
 
 class _AdaptiveUISystemState extends State<AdaptiveUISystem> {
-  final EmotionType _currentEmotionType = EmotionType.neutral;
+  EmotionType _currentEmotionType = EmotionType.neutral;
 
   @override
   void initState() {
@@ -348,6 +386,15 @@ class _AdaptiveUISystemState extends State<AdaptiveUISystem> {
   @override
   Widget build(BuildContext context) {
     final adaptationSystem = Provider.of<EmotionalAdaptationSystem>(context);
+    final contextManager = context.watch<PsychologicalContextManager>();
+    final detectedEmotion = contextManager.getDominantEmotion();
+
+    if (detectedEmotion != _currentEmotionType) {
+      _currentEmotionType = detectedEmotion;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onEmotionChanged?.call(detectedEmotion);
+      });
+    }
 
     return adaptationSystem.adaptWidgetToEmotion(
       widget.child,
@@ -439,6 +486,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = context.watch<AuthService>();
+
     if (_isLoading) {
       return const Scaffold(
         body: Stack(
@@ -483,7 +532,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
-    if (!_isAuthenticated) {
+    if (!_isAuthenticated || !authService.isAuthenticated) {
       return Scaffold(
         body: Center(
           child: Padding(
