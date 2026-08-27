@@ -20,7 +20,7 @@ void main() {
     });
 
     test('rejects a payload with a modified signature', () {
-      final payload = LegacyXorContractFixture.payload;
+      const payload = LegacyXorContractFixture.payload;
       final tampered = '${payload.substring(0, payload.length - 2)}AA';
 
       expect(
