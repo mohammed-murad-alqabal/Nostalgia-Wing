@@ -19,12 +19,124 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late final SettingsService _settings;
   late final PerformanceAdaptationService _performance;
+  bool _pinConfigured = false;
 
   @override
   void initState() {
     super.initState();
     _settings = sl.settingsService;
     _performance = PerformanceAdaptationService();
+    _loadPinState();
+  }
+
+  Future<void> _loadPinState() async {
+    try {
+      final configured = await context.read<AuthService>().hasPin();
+      if (mounted) setState(() => _pinConfigured = configured);
+    } catch (_) {
+      // Settings remain usable if secure storage is unavailable.
+    }
+  }
+
+  Future<void> _managePin() async {
+    if (_pinConfigured) {
+      final disable = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('تعطيل قفل التطبيق'),
+          content: const Text('سيعود التطبيق إلى جلسة محلية بلا PIN مستقل.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('تعطيل'),
+            ),
+          ],
+        ),
+      );
+      if (disable == true && mounted) {
+        await context.read<AuthService>().clearPin();
+        if (mounted) setState(() => _pinConfigured = false);
+      }
+      return;
+    }
+
+    final pinController = TextEditingController();
+    final confirmationController = TextEditingController();
+    String? errorMessage;
+    final pin = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('تفعيل قفل PIN'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: pinController,
+                keyboardType: TextInputType.number,
+                obscureText: true,
+                maxLength: 8,
+                decoration:
+                    const InputDecoration(labelText: 'رمز من 4 إلى 8 أرقام'),
+              ),
+              TextField(
+                controller: confirmationController,
+                keyboardType: TextInputType.number,
+                obscureText: true,
+                maxLength: 8,
+                decoration: const InputDecoration(labelText: 'تأكيد الرمز'),
+              ),
+              if (errorMessage != null)
+                Text(errorMessage!, style: const TextStyle(color: Colors.red)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final value = pinController.text.trim();
+                if (!RegExp(r'^\d{4,8}$').hasMatch(value)) {
+                  setDialogState(() => errorMessage = 'أدخل 4 إلى 8 أرقام.');
+                  return;
+                }
+                if (value != confirmationController.text.trim()) {
+                  setDialogState(() => errorMessage = 'الرمزان غير متطابقين.');
+                  return;
+                }
+                Navigator.pop(dialogContext, value);
+              },
+              child: const Text('تفعيل'),
+            ),
+          ],
+        ),
+      ),
+    );
+    pinController.dispose();
+    confirmationController.dispose();
+
+    if (pin == null || !mounted) return;
+    try {
+      await context.read<AuthService>().setPin(pin);
+      if (mounted) {
+        setState(() => _pinConfigured = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم تفعيل قفل PIN المحلي.')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تعذر تفعيل القفل حالياً.')),
+        );
+      }
+    }
   }
 
   Future<void> _editTextSetting({
@@ -212,14 +324,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsTile(
                 Icons.lock_outline,
                 'قفل التطبيق',
-                'الجلسة المحلية الحالية؛ القفل برمز غير مفعل '
-                    'بعد',
-                () => _showInfoDialog(
-                  'قفل التطبيق',
-                  'يعتمد التطبيق حالياً على جلسة محلية داخل الذاكرة. '
-                      'قفل الجهاز أو PIN مستقل يحتاج تفعيله قبل اعتباره '
-                      'حماية إضافية.',
-                ),
+                _pinConfigured
+                    ? 'PIN مفعل — اضغط للتعطيل'
+                    : 'PIN غير مفعل — اضغط للتفعيل',
+                _managePin,
               ),
               _buildSettingsTile(
                 Icons.security,

@@ -54,6 +54,23 @@ class NotificationService {
     if (!_initialized) await init();
     if (!_initialized) return;
 
+    try {
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    } catch (e) {
+      WingLogger.warning(
+        'تعذر طلب إذن الإشعارات؛ سيبقى الحفظ المحلي متاحاً.',
+        tag: 'Notifications',
+        data: {'error_type': e.runtimeType.toString()},
+      );
+    }
+
     const androidDetails = AndroidNotificationDetails(
       'nostalgia_wing_events',
       'أحداث جناح الحنين',

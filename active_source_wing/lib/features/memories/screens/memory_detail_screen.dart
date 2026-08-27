@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/data/app_database.dart';
 import '../../../core/services/db_service.dart';
 import '../../../core/di/service_locator.dart';
+import 'add_memory_screen.dart';
 
 /// Screen for displaying details of a memory.
 class MemoryDetailScreen extends StatefulWidget {
@@ -87,6 +88,25 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
     }
   }
 
+  Future<void> _editMemory() async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddMemoryScreen(memory: _currentMemory),
+      ),
+    );
+    if (saved == true && mounted) {
+      try {
+        final dbService = Provider.of<DBService>(context, listen: false);
+        final refreshed = await dbService.getMemory(_currentMemory.id);
+        if (refreshed != null) _currentMemory = refreshed;
+      } catch (_) {
+        // Keep the current view if the refresh cannot complete.
+      }
+      await _decryptContent();
+    }
+  }
+
   Future<void> _deleteMemory() async {
     try {
       final dbService = Provider.of<DBService>(context, listen: false);
@@ -112,6 +132,12 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
           ),
           actions: [
             IconButton(
+              tooltip: 'تعديل الذكرى',
+              icon: const Icon(Icons.edit_outlined, color: Colors.white),
+              onPressed: _editMemory,
+            ),
+            IconButton(
+              tooltip: 'حذف الذكرى',
               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
               onPressed: () {
                 showDialog(

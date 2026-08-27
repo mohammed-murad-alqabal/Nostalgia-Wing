@@ -723,30 +723,32 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   Widget _buildHeartWidget() {
     // تحسين الأداء: استخدام حركة بسيطة في الأداء المنخفض
     if (_adaptationService.config.performanceLevel == PerformanceLevel.low) {
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            _isInteracting = !_isInteracting;
-          });
-          _triggerHeartInteraction();
-        },
-        child: Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _getEmotionalColor(_currentEmotion),
-          ),
-          child: const Icon(
-            Icons.favorite,
-            size: 60,
-            color: Colors.white,
+      return _heartSemantics(
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isInteracting = !_isInteracting;
+            });
+            _triggerHeartInteraction();
+          },
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _getEmotionalColor(_currentEmotion),
+            ),
+            child: const Icon(
+              Icons.favorite,
+              size: 60,
+              color: Colors.white,
+            ),
           ),
         ),
       );
     }
 
-    return AnimatedBuilder(
+    return _heartSemantics(AnimatedBuilder(
       animation: _heartbeatAnimation,
       builder: (context, child) => Transform.scale(
         scale: _animationsPaused ? 1.0 : _heartbeatAnimation.value,
@@ -787,8 +789,15 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           ),
         ),
       ),
-    );
+    ));
   }
+
+  Widget _heartSemantics(Widget child) => Semantics(
+        button: true,
+        label: 'تسجيل حضور عاطفي',
+        hint: 'اضغط لتسجيل تفاعل حقيقي في سجل العلاقة',
+        child: child,
+      );
 
   Widget _buildFeatureCards() => Column(
         children: [

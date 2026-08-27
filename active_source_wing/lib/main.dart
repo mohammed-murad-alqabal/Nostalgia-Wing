@@ -35,6 +35,7 @@ import 'features/home/screens/home_screen.dart';
 import 'features/home/screens/surprise_screen.dart';
 import 'features/messages/screens/love_message_screen.dart';
 import 'features/home/widgets/cognitive_identity_widgets.dart';
+import 'features/auth/screens/pin_lock_screen.dart';
 
 /// التطبيق الرئيسي - جناح الحنين
 /// كيان هندسي حي للحب والحنين مع نظام ذكاء عاطفي متقدم
@@ -451,6 +452,19 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _checkAuthentication() async {
     try {
       final authService = context.read<AuthService>();
+      await authService.initialize();
+      final hasPin = await authService.hasPin();
+
+      if (hasPin) {
+        if (mounted) {
+          setState(() {
+            _isAuthenticated = false;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
       final isAuthenticated = await authService.authenticate();
 
       if (mounted) {
@@ -463,10 +477,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
       WingLogger.info(
         'تم فحص المصادقة',
         tag: 'Auth',
-        data: {'authenticated': isAuthenticated},
+        data: {'authenticated': isAuthenticated, 'pin_required': false},
       );
-
-      // If we implement login screen later, we will use isAuthenticated here.
     } catch (e, stackTrace) {
       WingLogger.error(
         'فشل في فحص المصادقة',
@@ -533,6 +545,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
 
     if (!_isAuthenticated || !authService.isAuthenticated) {
+      if (authService.hasPinConfigured) {
+        return PinLockScreen(
+          onUnlocked: () {
+            if (mounted) setState(() => _isAuthenticated = true);
+          },
+        );
+      }
       return Scaffold(
         body: Center(
           child: Padding(

@@ -1,4 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+
+import 'package:crypto/crypto.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../infrastructure/wing_logger.dart';
 
@@ -24,9 +30,13 @@ class AuthService extends ChangeNotifier {
   /// Returns the singleton instance of [AuthService].
   static AuthService get instance => _instance ??= AuthService._();
 
+  static const _pinHashKey = 'nostalgia_wing.local_pin_hash';
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+
   bool _isInitialized = false;
   bool _isAuthenticated = false;
   bool _isDisposed = false;
+  bool _hasPinConfigured = false;
 
   /// Initializes the auth service.
   Future<void> initialize() async {
@@ -39,6 +49,71 @@ class AuthService extends ChangeNotifier {
       WingLogger.error('Error initializing auth service: $e', tag: 'Auth');
       rethrow;
     }
+  }
+
+  /// Returns whether a local PIN has been configured.
+  Future<bool> hasPin() async {
+    try {
+      final storedHash = await _secureStorage.read(key: _pinHashKey);
+      _hasPinConfigured = storedHash != null && storedHash.isNotEmpty;
+      return _hasPinConfigured;
+    } catch (e) {
+      WingLogger.warning(
+        'تعذر قراءة حالة PIN؛ لن يتم افتراض وجود قفل.',
+        tag: 'Auth',
+        data: {'error_type': e.runtimeType.toString()},
+      );
+      return false;
+    }
+  }
+
+  /// Synchronous cached value used after [hasPin] or [setPin] completes.
+  bool get hasPinConfigured => _hasPinConfigured;
+
+  /// Saves a local PIN as a SHA-256 hash in secure storage.
+  Future<void> setPin(String pin) async {
+    final normalized = pin.trim();
+    if (!RegExp(r'^\d{4,8}$').hasMatch(normalized)) {
+      throw ArgumentError('PIN must contain 4 to 8 digits');
+    }
+    final hash = sha256.convert(utf8.encode(normalized)).toString();
+    await _secureStorage.write(key: _pinHashKey, value: hash);
+    _hasPinConfigured = true;
+    _notifyIfActive();
+  }
+
+  /// Verifies a local PIN and opens the authenticated session on success.
+  Future<bool> authenticateWithPin(String pin) async {
+    try {
+      final storedHash = await _secureStorage.read(key: _pinHashKey);
+      if (storedHash == null || storedHash.isEmpty) return false;
+      final candidate = sha256.convert(utf8.encode(pin.trim())).toString();
+      if (candidate != storedHash) return false;
+      await initialize();
+      _hasPinConfigured = true;
+      _isAuthenticated = true;
+      _notifyIfActive();
+      return true;
+    } catch (e) {
+      WingLogger.warning(
+        'تعذر التحقق من PIN.',
+        tag: 'Auth',
+        data: {'error_type': e.runtimeType.toString()},
+      );
+      return false;
+    }
+  }
+
+  /// Removes the local PIN requirement.
+  Future<void> clearPin() async {
+    try {
+      await _secureStorage.delete(key: _pinHashKey);
+    } on MissingPluginException {
+      // Desktop/unit-test environments may not provide secure storage.
+      // Android/iOS still execute the real delete operation.
+    }
+    _hasPinConfigured = false;
+    _notifyIfActive();
   }
 
   /// Opens the local session.

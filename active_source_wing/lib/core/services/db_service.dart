@@ -35,6 +35,13 @@ class DBService {
     return _db.select(_db.memories).get();
   }
 
+  /// Retrieves one stored memory by its identifier.
+  Future<Memory?> getMemory(int id) async {
+    _requireAuthenticated();
+    return (_db.select(_db.memories)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+  }
+
   /// Increments the view count for a memory.
   Future<void> incrementMemoryViewCount(int id) async {
     _requireAuthenticated();
