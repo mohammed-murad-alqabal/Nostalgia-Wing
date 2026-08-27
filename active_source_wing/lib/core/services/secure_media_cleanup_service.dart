@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+
+import '../infrastructure/app_storage_directory.dart';
 
 /// Owns lifecycle cleanup for encrypted files stored in `secure_media`.
 ///
@@ -12,7 +13,7 @@ class SecureMediaCleanupService {
   SecureMediaCleanupService({
     Future<Directory> Function()? applicationDirectoryProvider,
   }) : _applicationDirectoryProvider =
-            applicationDirectoryProvider ?? getApplicationDocumentsDirectory;
+            applicationDirectoryProvider ?? resolveAppDocumentsDirectory;
 
   /// The application-owned directory name for encrypted memory media.
   static const secureMediaDirectoryName = 'secure_media';

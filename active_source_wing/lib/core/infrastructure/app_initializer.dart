@@ -12,6 +12,7 @@ import '../cognitive/resonance_engine.dart';
 import 'institutional_governance_manager.dart';
 import 'living_documentation_system.dart';
 import 'wing_logger.dart';
+import 'app_storage_directory.dart';
 import '../di/service_locator.dart';
 import '../models/verse_model.dart';
 import '../models/gratitude_entry_model.dart';
@@ -29,7 +30,8 @@ class AppInitializer {
 
     try {
       // 1. Critical Base Infrastructure (Sequential)
-      await Hive.initFlutter();
+      final appDirectory = await resolveAppDocumentsDirectory();
+      Hive.init(appDirectory.path);
       _registerAdapters();
 
       // 2. Parallel Service Initialization
