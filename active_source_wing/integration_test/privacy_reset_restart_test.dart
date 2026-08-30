@@ -38,13 +38,13 @@ void main() {
       expect(mediaFile.existsSync(), isTrue);
 
       final labTitle = find.text('مختبر الذكاء المعرفي').first;
-      final labEntry = find.ancestor(
-        of: labTitle,
-        matching: find.byType(InkWell),
+      await tester.scrollUntilVisible(
+        labTitle,
+        500.0,
+        maxScrolls: 30,
       );
-      await tester.ensureVisible(labEntry);
       await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(labEntry);
+      await tester.tap(labTitle);
 
       final labScrollView = find.byType(CustomScrollView);
       await _pumpUntil(
