@@ -1,0 +1,20 @@
+This PR merges the following changes into main:
+
+- origin/rehabilitation/functional-recovery (3 commits)
+- origin/security/legacy-xor-contract-tests-2026-08-27 (2 commits)
+
+Includes cleanup of deprecated files and archive documentation to active_source_wing/docs/archive.
+
+## Commits included:
+- fc147f0 test: scroll to intelligence lab before tapping
+- a4d0131 complete functional rehabilitation and secure local lock
+- c8ce365 rehabilitate core app flows and replace fake UI actions
+- 5541886 fix: satisfy analyzer in legacy contract test
+- 83f8d3f test: preserve legacy XOR contract vectors
+
+## Files changed:
+- Added Pin Lock screen for enhanced authentication
+- Improved performance monitoring and audio service
+- Implemented legacy XOR contract tests for security
+- Updated UI screens: home, memories, messages, settings
+- Archived deprecated documentation to docs/archive/
