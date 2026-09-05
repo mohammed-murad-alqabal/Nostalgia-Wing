@@ -35,6 +35,26 @@ class DBService {
     return _db.select(_db.memories).get();
   }
 
+  /// Retrieves one stored memory by its identifier.
+  Future<Memory?> getMemory(int id) async {
+    _requireAuthenticated();
+    return (_db.select(_db.memories)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+  }
+
+  /// Increments the view count for a memory.
+  Future<void> incrementMemoryViewCount(int id) async {
+    _requireAuthenticated();
+    final memory = await (_db.select(_db.memories)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    if (memory == null) return;
+
+    await (_db.update(_db.memories)..where((t) => t.id.equals(id))).write(
+      MemoriesCompanion(viewCount: Value(memory.viewCount + 1)),
+    );
+  }
+
   /// Saves or updates a memory entry for the active local session.
   Future<void> saveMemory(Memory memory) async {
     _requireAuthenticated();

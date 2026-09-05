@@ -18,6 +18,7 @@ class MemoriesListScreen extends StatefulWidget {
 
 class _MemoriesListScreenState extends State<MemoriesListScreen> {
   List<Memory> _memories = [];
+  final Map<int, String> _decryptedTitles = {};
   bool _isLoading = true;
 
   @override
@@ -31,27 +32,37 @@ class _MemoriesListScreenState extends State<MemoriesListScreen> {
     final memories = await dbService.getMemories();
 
     try {
-      // Decrypt all titles using the key ID recorded in each envelope.
-      final decryptedMemories = await Future.wait(memories.map((m) async {
+      // Decrypt titles for display only. Keep the original encrypted rows so
+      // MemoryDetailScreen can decrypt them exactly once.
+      final decryptedTitles = <int, String>{};
+      for (final memory in memories) {
         try {
-          final decryptedTitle = await sl.encryptionService.decrypt(m.title);
-          return m.copyWith(title: decryptedTitle);
-        } catch (e) {
-          return m.copyWith(title: 'خطأ في التشفير');
+          decryptedTitles[memory.id] =
+              await sl.encryptionService.decrypt(memory.title);
+        } catch (_) {
+          decryptedTitles[memory.id] = 'تعذر قراءة عنوان الذكرى';
         }
-      }));
+      }
 
       if (mounted) {
         setState(() {
-          _memories = decryptedMemories
+          _memories = memories
             ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _decryptedTitles
+            ..clear()
+            ..addAll(decryptedTitles);
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _memories = memories; // Fallback to raw (encrypted)
+          _memories = memories
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _decryptedTitles
+            ..clear()
+            ..addEntries(memories.map(
+                (memory) => MapEntry(memory.id, 'تعذر قراءة عنوان الذكرى')));
           _isLoading = false;
         });
       }
@@ -159,7 +170,8 @@ class _MemoriesListScreenState extends State<MemoriesListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        memory.title,
+                        _decryptedTitles[memory.id] ??
+                            'تعذر قراءة عنوان الذكرى',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,

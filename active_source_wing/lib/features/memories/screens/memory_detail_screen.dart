@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/data/app_database.dart';
 import '../../../core/services/db_service.dart';
 import '../../../core/di/service_locator.dart';
+import 'add_memory_screen.dart';
 
 /// Screen for displaying details of a memory.
 class MemoryDetailScreen extends StatefulWidget {
@@ -35,7 +36,17 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
   void initState() {
     super.initState();
     _currentMemory = widget.memory;
+    _recordView();
     _decryptContent();
+  }
+
+  Future<void> _recordView() async {
+    try {
+      final dbService = Provider.of<DBService>(context, listen: false);
+      await dbService.incrementMemoryViewCount(_currentMemory.id);
+    } catch (_) {
+      // Viewing remains available even if analytics cannot be updated.
+    }
   }
 
   Future<void> _decryptContent() async {
@@ -68,17 +79,45 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
       if (mounted) {
         setState(() {
           _decryptedTitle = 'خطأ في التشفير';
-          _decryptedDescription = 'لا يمكن عرض المحتوى: $e';
+          _decryptedDescription =
+              'تعذر فك محتوى هذه الذكرى. قد تكون البيانات تالفة '
+              'أو المفتاح غير متاح.';
           _isLoading = false;
         });
       }
     }
   }
 
+  Future<void> _editMemory() async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddMemoryScreen(memory: _currentMemory),
+      ),
+    );
+    if (saved == true && mounted) {
+      try {
+        final dbService = Provider.of<DBService>(context, listen: false);
+        final refreshed = await dbService.getMemory(_currentMemory.id);
+        if (refreshed != null) _currentMemory = refreshed;
+      } catch (_) {
+        // Keep the current view if the refresh cannot complete.
+      }
+      await _decryptContent();
+    }
+  }
+
   Future<void> _deleteMemory() async {
-    final dbService = Provider.of<DBService>(context, listen: false);
-    await dbService.deleteMemory(_currentMemory.id);
-    widget.onClose();
+    try {
+      final dbService = Provider.of<DBService>(context, listen: false);
+      await dbService.deleteMemory(_currentMemory.id);
+      if (mounted) widget.onClose();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر حذف الذكرى حالياً.')),
+      );
+    }
   }
 
   @override
@@ -93,6 +132,12 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
           ),
           actions: [
             IconButton(
+              tooltip: 'تعديل الذكرى',
+              icon: const Icon(Icons.edit_outlined, color: Colors.white),
+              onPressed: _editMemory,
+            ),
+            IconButton(
+              tooltip: 'حذف الذكرى',
               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
               onPressed: () {
                 showDialog(
@@ -109,9 +154,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
                           onPressed: () => Navigator.pop(context),
                           child: const Text('تراجع')),
                       TextButton(
-                          onPressed: () {
+                          onPressed: () async {
                             Navigator.pop(context);
-                            _deleteMemory();
+                            await _deleteMemory();
                           },
                           child: const Text('حذف',
                               style: TextStyle(color: Colors.redAccent))),
@@ -191,7 +236,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
                       textAlign: TextAlign.right,
                     ),
                     const SizedBox(height: 48),
-                    // Spiritual Insight Placeholder (رفيق الروح)
+                    // إرشاد ثابت عام، وليس نتيجة تحليل آلي لهذه الذكرى.
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(

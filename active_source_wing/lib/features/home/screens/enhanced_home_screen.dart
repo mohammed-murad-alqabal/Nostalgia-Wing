@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 
 import 'dart:async';
 import 'dart:math' as math;
@@ -16,6 +17,9 @@ import '../../mirror/presentation/screens/emotion_mirror_screen.dart';
 // Widget imports
 import '../widgets/enhanced_parallax_layer.dart';
 import '../widgets/cognitive_identity_widgets.dart';
+import '../../../core/cognitive/psychological_context_manager.dart';
+import '../../../core/cognitive/surprise_evolution_engine.dart';
+import 'surprise_screen.dart';
 import '../../mirror/presentation/screens/intelligence_lab_screen.dart';
 import '../../messages/screens/love_message_screen.dart';
 import '../../memories/screens/memories_list_screen.dart';
@@ -79,8 +83,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     // تهيئة الحركات
     _initializeAnimations();
 
-    // بدء المحرك العاطفي
-    _startEmotionalEngine();
+    // لا نغير الحالة العاطفية تلقائياً؛ تُبنى من تفاعل أو إدخال حقيقي.
   }
 
   /// تهيئة مراقبة الأداء
@@ -249,15 +252,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     ).animate(_mainAnimationController);
 
     _mainAnimationController.forward();
-  }
-
-  void _startEmotionalEngine() {
-    // محاكاة تشغيل المحرك العاطفي
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        _updateEmotionalState(EmotionType.happy);
-      }
-    });
   }
 
   void _updateEmotionalState(EmotionType newEmotion) {
@@ -729,30 +723,32 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   Widget _buildHeartWidget() {
     // تحسين الأداء: استخدام حركة بسيطة في الأداء المنخفض
     if (_adaptationService.config.performanceLevel == PerformanceLevel.low) {
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            _isInteracting = !_isInteracting;
-          });
-          _triggerHeartInteraction();
-        },
-        child: Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _getEmotionalColor(_currentEmotion),
-          ),
-          child: const Icon(
-            Icons.favorite,
-            size: 60,
-            color: Colors.white,
+      return _heartSemantics(
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isInteracting = !_isInteracting;
+            });
+            _triggerHeartInteraction();
+          },
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _getEmotionalColor(_currentEmotion),
+            ),
+            child: const Icon(
+              Icons.favorite,
+              size: 60,
+              color: Colors.white,
+            ),
           ),
         ),
       );
     }
 
-    return AnimatedBuilder(
+    return _heartSemantics(AnimatedBuilder(
       animation: _heartbeatAnimation,
       builder: (context, child) => Transform.scale(
         scale: _animationsPaused ? 1.0 : _heartbeatAnimation.value,
@@ -793,8 +789,15 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           ),
         ),
       ),
-    );
+    ));
   }
+
+  Widget _heartSemantics(Widget child) => Semantics(
+        button: true,
+        label: 'تسجيل حضور عاطفي',
+        hint: 'اضغط لتسجيل تفاعل حقيقي في سجل العلاقة',
+        child: child,
+      );
 
   Widget _buildFeatureCards() => Column(
         children: [
@@ -804,8 +807,14 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             subtitle: 'همسات من القلب',
             color: Colors.pink.shade300,
             onTap: () {
-              // Navigation simulation with premium feedback
-              _triggerHeartInteraction();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LoveMessageScreen(
+                    onClose: () => Navigator.pop(context),
+                  ),
+                ),
+              );
             },
           ),
           const SizedBox(height: 15),
@@ -1032,27 +1041,39 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     );
   }
 
-  void _triggerHeartInteraction() {
-    // محاكاة تفاعل القلب
-    const emotions = EmotionType.values;
-    final randomEmotion = emotions[math.Random().nextInt(emotions.length)];
-    _updateEmotionalState(randomEmotion);
+  Future<void> _triggerHeartInteraction() async {
+    try {
+      final contextManager = context.read<PsychologicalContextManager>();
+      await contextManager.trackInteraction(
+        text: 'تفاعل المستخدم مع القلب في الصفحة الرئيسية',
+        type: EmotionType.love,
+        metadata: {
+          'interaction_type': 'heart_tap',
+          'content_type': 'presence',
+        },
+      );
+    } catch (_) {
+      // The visual interaction remains usable in isolated previews/tests;
+      // the full app records it through the provided context manager.
+    }
 
-    // إظهار رسالة تفاعلية راقية
-    final message = _getEmotionalMessage(randomEmotion);
+    if (!mounted) return;
+    _updateEmotionalState(EmotionType.love);
+
+    // عرض تأكيد صريح على تسجيل التفاعل، دون اختلاق مشاعر عشوائية.
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
+        content: const Text(
+          'تم تسجيل لحظة حضورك في سجل المشاعر.',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
             fontFamily: 'Inter',
           ),
         ),
         backgroundColor:
-            _getEmotionalColor(randomEmotion).withValues(alpha: 0.9),
+            _getEmotionalColor(_currentEmotion).withValues(alpha: 0.9),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
@@ -1062,30 +1083,46 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     );
   }
 
-  void _triggerSurprise() {
-    // محاكاة تفعيل المفاجأة
-    final surpriseMessages = [
-      'لديك رسالة حب جديدة!',
-      'تم إضافة ذكرى جميلة لألبومك!',
-      'مفاجأة! لقد حصلت على هدية رقمية!',
-    ];
+  Future<void> _triggerSurprise() async {
+    try {
+      final engine = context.read<SurpriseEvolutionEngine>();
+      final message = await engine.programmedSerendipityAlgorithm();
+      if (!mounted) return;
 
-    final randomMessage =
-        surpriseMessages[math.Random().nextInt(surpriseMessages.length)];
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('مفاجأة! 🎉'),
-        content: Text(randomMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('شكراً لك'),
-          ),
-        ],
-      ),
-    );
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('مفاجأة من جناح الحنين'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SurpriseScreen(
+                      onClose: () => Navigator.pop(context),
+                    ),
+                  ),
+                );
+              },
+              child: const Text('عرض المفاجآت'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('إغلاق'),
+            ),
+          ],
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('تعذر إنشاء المفاجأة حالياً. حاول لاحقاً.')),
+      );
+    }
   }
 
   void _analyzeEmotions() {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:wing_of_nostalgia/features/mirror/presentation/screens/intelligence_lab_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +12,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('IntelligenceLabScreen shows charts and engine cards',
+  testWidgets('IntelligenceLabScreen shows honest metrics and engine cards',
       (tester) async {
     // Set larger surface size to ensure slivers are built
     tester.view.physicalSize = const Size(1080, 2400);
@@ -37,9 +36,11 @@ void main() {
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -1000));
     await tester.pump();
 
-    // 5. Verify Charts
-    expect(find.byType(LineChart), findsOneWidget);
-    expect(find.byType(BarChart), findsOneWidget);
+    // 5. Metrics must be data-backed or explicitly show that data is missing.
+    expect(
+      find.text('لا توجد تفاعلات كافية لعرض قياس حقيقي بعد.'),
+      findsNWidgets(2),
+    );
 
     // 6. Verify maintenance Button
     expect(find.text('صيانة الخصوصية - Privacy Maintenance'), findsOneWidget);

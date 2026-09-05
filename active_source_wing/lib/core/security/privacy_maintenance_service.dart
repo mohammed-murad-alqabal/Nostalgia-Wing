@@ -90,6 +90,7 @@ class PrivacyMaintenanceService {
     });
 
     await attempt('authentication session', () async {
+      await AuthService.instance.clearPin();
       await AuthService.instance.logout();
       AuthService.instance.dispose();
     });

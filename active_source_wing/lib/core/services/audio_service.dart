@@ -27,8 +27,6 @@ class AudioService {
     }
   }
 
-  // Placeholder methods for future implementation
-
   /// Plays audio from the specified path.
   Future<void> playAudio(String path) async {
     WingLogger.info('Playing audio: $path', tag: 'Audio');
@@ -51,22 +49,6 @@ class AudioService {
   Future<void> resumeAudio() async {
     WingLogger.info('Resuming audio', tag: 'Audio');
     await _audioPlayer.resume();
-  }
-
-  /// Starts recording audio.
-  ///
-  /// Returns the path to the recorded file, or null if recording failed.
-  Future<String?> recordAudio() async {
-    WingLogger.info('Recording audio', tag: 'Audio');
-    // Implementation would require record/path_provider
-    // Placeholder for symmetry without a pending marker
-    return null;
-  }
-
-  /// Stops audio recording.
-  Future<void> stopRecording() async {
-    WingLogger.info('Stopping recording', tag: 'Audio');
-    // Integration with recording package here
   }
 
   /// Disposes resources.

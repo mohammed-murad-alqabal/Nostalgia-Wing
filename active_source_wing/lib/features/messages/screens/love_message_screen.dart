@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/models/message_template.dart';
 import '../../../core/services/emotional_message_service.dart';
 import '../../../core/services/sensory_feedback_service.dart';
@@ -27,6 +28,7 @@ class _LoveMessageScreenState extends State<LoveMessageScreen>
   String _customMessage = '';
   List<Map<String, dynamic>> _history = [];
   bool _isLoadingHistory = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -45,36 +47,71 @@ class _LoveMessageScreenState extends State<LoveMessageScreen>
   }
 
   Future<void> _loadMessages() async {
-    _suggestedMessage =
+    final suggested =
         await _emotionalMessageService.getSuggestedResonantMessage();
-    // _allTemplates loaded within service if needed for history
-    setState(() {});
+    if (!mounted) return;
+    setState(() => _suggestedMessage = suggested);
   }
 
   Future<void> _loadHistory() async {
+    if (!mounted) return;
     setState(() => _isLoadingHistory = true);
-    _history = await _emotionalMessageService.getDecryptedHistory();
-    setState(() => _isLoadingHistory = false);
+    try {
+      final history = await _emotionalMessageService.getDecryptedHistory();
+      if (!mounted) return;
+      setState(() => _history = history);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر تحميل سجل الرسائل حالياً.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoadingHistory = false);
+    }
   }
 
   /// Handles sending a message.
   Future<void> _handleSendMessage(String content, String type) async {
+    if (_isSaving || content.trim().isEmpty) return;
     SensoryFeedbackService.selectionClick();
+    setState(() => _isSaving = true);
 
-    // Save to encrypted history
-    await _emotionalMessageService.saveSentMessage(
-      content: content,
-      type: type,
-    );
-
-    if (mounted) {
+    try {
+      await _emotionalMessageService.saveSentMessage(
+        content: content.trim(),
+        type: type,
+      );
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تم إرسال الرسالة وحفظها في السجل بنجاح! ❤️'),
+          content: Text('تم حفظ الرسالة في السجل المشفر.'),
           backgroundColor: Colors.pink,
         ),
       );
-      _loadHistory(); // Refresh history
+      await _loadHistory();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر حفظ الرسالة حالياً.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _shareMessage(String message) async {
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: message,
+          subject: 'رسالة من جناح الحنين',
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذرت مشاركة الرسالة من الجهاز.')),
+      );
     }
   }
 
@@ -205,10 +242,17 @@ class _LoveMessageScreenState extends State<LoveMessageScreen>
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton.icon(
-                    onPressed: () => _handleSendMessage(
-                        _suggestedMessage!.content, _suggestedMessage!.type),
-                    icon: const Icon(Icons.send, size: 16),
-                    label: const Text('إرسال'),
+                    onPressed: _isSaving
+                        ? null
+                        : () => _handleSendMessage(_suggestedMessage!.content,
+                            _suggestedMessage!.type),
+                    icon: const Icon(Icons.save_alt, size: 16),
+                    label: const Text('حفظ في السجل'),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _shareMessage(_suggestedMessage!.content),
+                    icon: const Icon(Icons.share, size: 16),
+                    label: const Text('مشاركة'),
                   ),
                 ],
               ),
@@ -233,7 +277,7 @@ class _LoveMessageScreenState extends State<LoveMessageScreen>
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _customMessage.isEmpty
+              onPressed: _isSaving || _customMessage.trim().isEmpty
                   ? null
                   : () => _handleSendMessage(_customMessage, 'custom'),
               style: ElevatedButton.styleFrom(
@@ -242,7 +286,13 @@ class _LoveMessageScreenState extends State<LoveMessageScreen>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)),
               ),
-              child: const Text('إرسال وحفظ'),
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('حفظ في السجل'),
             ),
           ),
         ],
@@ -269,6 +319,11 @@ class _LoveMessageScreenState extends State<LoveMessageScreen>
             subtitle: Text(dateStr, style: const TextStyle(fontSize: 10)),
             leading:
                 Icon(_getMessageIcon(entry['type']), color: Colors.pink[300]),
+            trailing: IconButton(
+              tooltip: 'مشاركة',
+              icon: const Icon(Icons.share, color: Colors.pink),
+              onPressed: () => _shareMessage(entry['content']),
+            ),
             onTap: () => _handleCopyMessage(entry['content']),
           ),
         );

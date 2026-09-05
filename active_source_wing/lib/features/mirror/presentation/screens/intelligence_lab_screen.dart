@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/infrastructure/institutional_governance_manager.dart';
 import '../../../../core/infrastructure/living_documentation_system.dart';
 import '../../../../core/infrastructure/wing_logger.dart';
+import '../../../../core/cognitive/psychological_context_manager.dart';
+import '../../../../core/cognitive/relational_analytics_service.dart';
 import '../../../../core/security/privacy_maintenance_service.dart';
 import '../../../../core/services/sensory_feedback_service.dart';
+import '../../../messages/screens/love_message_screen.dart';
 
 /// The Intelligence Lab Screen
 /// A high-tech dashboard to monitor and animate all core intelligence
@@ -21,10 +24,6 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-
-  bool _isGovernanceActive = true;
-  bool _isDocsActive = true;
-  bool _isResonanceActive = true;
 
   @override
   void initState() {
@@ -171,33 +170,40 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
             'نحو الحوكمة',
             'Governance',
             Icons.gavel,
-            _isGovernanceActive,
+            true,
             const Color(0xFFF43F5E),
             () {
               SensoryFeedbackService.selectionClick();
-              setState(() => _isGovernanceActive = !_isGovernanceActive);
+              _showGovernanceReport();
             },
           ),
           _buildEngineCard(
             'التوثيق الحي',
             'Living Docs',
             Icons.auto_stories,
-            _isDocsActive,
+            true,
             const Color(0xFF10B981),
             () {
               SensoryFeedbackService.selectionClick();
-              setState(() => _isDocsActive = !_isDocsActive);
+              _showDocsIndex();
             },
           ),
           _buildEngineCard(
             'محرك الرنين',
             'Resonance',
             Icons.graphic_eq,
-            _isResonanceActive,
+            true,
             const Color(0xFF8B5CF6),
             () {
               SensoryFeedbackService.selectionClick();
-              setState(() => _isResonanceActive = !_isResonanceActive);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LoveMessageScreen(
+                    onClose: () => Navigator.pop(context),
+                  ),
+                ),
+              );
             },
           ),
           _buildEngineCard(
@@ -206,7 +212,12 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
             Icons.blur_circular,
             true,
             const Color(0xFFF59E0B),
-            () {},
+            () => _showDataDialog(
+              'الجاذبية العاطفية',
+              'يتم تسجيل الجاذبية عند تفاعل المستخدم مع القلب أو تسجيل '
+                  'انعكاس. لا يعرض هذا المؤشر رقماً مصطنعاً قبل توفر سجل '
+                  'تفاعلات.',
+            ),
           ),
         ],
       );
@@ -313,82 +324,110 @@ class _IntelligenceLabScreenState extends State<IntelligenceLabScreen>
         ),
       );
 
-  Widget _buildStabilityChart() => Container(
-        height: 200,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: LineChart(
-          LineChartData(
-            gridData: const FlGridData(show: false),
-            titlesData: const FlTitlesData(show: false),
-            borderData: FlBorderData(show: false),
-            minX: 0,
-            maxX: 7,
-            minY: 0,
-            maxY: 1,
-            lineBarsData: [
-              LineChartBarData(
-                spots: const [
-                  FlSpot(0, 0.5),
-                  FlSpot(1, 0.7),
-                  FlSpot(2, 0.6),
-                  FlSpot(3, 0.8),
-                  FlSpot(4, 0.85),
-                  FlSpot(5, 0.75),
-                  FlSpot(6, 0.9),
-                ],
-                isCurved: true,
-                color: const Color(0xFF38BDF8),
-                barWidth: 4,
-                isStrokeCapRound: true,
-                dotData: const FlDotData(show: false),
-                belowBarData: BarAreaData(
-                  show: true,
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-                ),
-              ),
-            ],
-          ),
-        ),
+  Future<RelationalReport?> _loadReport() async {
+    try {
+      final contextManager = context.read<PsychologicalContextManager>();
+      final analytics = context.read<RelationalAnalyticsService>();
+      return await analytics
+          .analyzeRelationalHealth(contextManager.interactions);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get _hasInteractions {
+    try {
+      return context
+          .read<PsychologicalContextManager>()
+          .interactions
+          .isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Widget _buildStabilityChart() => _buildMetricCard(
+        title: 'الاستقرار الحالي',
+        icon: Icons.balance,
+        color: const Color(0xFF38BDF8),
+        value: (report) => '${(report.stability * 100).round()}%',
+        description: (report) =>
+            'محسوب من سجل التفاعلات المحلي، وليس من قيمة تجميلية ثابتة.',
       );
 
-  Widget _buildEngagementChart() => Container(
-        height: 150,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: BarChart(
-          BarChartData(
-            gridData: const FlGridData(show: false),
-            titlesData: const FlTitlesData(show: false),
-            borderData: FlBorderData(show: false),
-            barGroups: [
-              _makeBarGroup(0, 0.4, const Color(0xFF818CF8)),
-              _makeBarGroup(1, 0.6, const Color(0xFF818CF8)),
-              _makeBarGroup(2, 0.8, const Color(0xFF818CF8)),
-              _makeBarGroup(3, 0.7, const Color(0xFF818CF8)),
-              _makeBarGroup(4, 0.9, const Color(0xFFF43F5E)),
-            ],
-          ),
-        ),
+  Widget _buildEngagementChart() => _buildMetricCard(
+        title: 'سرعة التفاعل الحالية',
+        icon: Icons.speed,
+        color: const Color(0xFF818CF8),
+        value: (report) => report.engagementVelocity.toStringAsFixed(1),
+        description: (report) => 'تفاعل يومياً وفق الفترة المتاحة في السجل.',
       );
 
-  BarChartGroupData _makeBarGroup(int x, double y, Color color) =>
-      BarChartGroupData(
-        x: x,
-        barRods: [
-          BarChartRodData(
-            toY: y,
-            color: color,
-            width: 15,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ],
+  Widget _buildMetricCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required String Function(RelationalReport report) value,
+    required String Function(RelationalReport report) description,
+  }) =>
+      FutureBuilder<RelationalReport?>(
+        future: _loadReport(),
+        builder: (context, snapshot) {
+          final hasData = _hasInteractions;
+          final report = snapshot.data;
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withValues(alpha: 0.25)),
+            ),
+            child: !hasData
+                ? const Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Color(0xFF94A3B8)),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'لا توجد تفاعلات كافية لعرض قياس حقيقي بعد.',
+                          style: TextStyle(color: Color(0xFFCBD5E1)),
+                        ),
+                      ),
+                    ],
+                  )
+                : report == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : Row(
+                        children: [
+                          Icon(icon, color: color, size: 32),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(title,
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 6),
+                                Text(value(report),
+                                    style: TextStyle(
+                                        color: color,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                Text(description(report),
+                                    style: const TextStyle(
+                                        color: Color(0xFF94A3B8),
+                                        fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+          );
+        },
       );
 
   Widget _buildPrivacyMaintenanceButton() => Container(
